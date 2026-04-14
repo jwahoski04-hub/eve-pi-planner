@@ -170,7 +170,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .opt-panel{margin-top:0}
 /* Extraction timer cards */
 .timer-char{margin-bottom:20px}
-.timer-char-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.timer-char-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;user-select:none}
+.timer-char-hdr:hover .timer-char-avatar{border-color:var(--accent)}
+.timer-char-avatar{width:28px;height:28px;border:1px solid var(--border2);flex-shrink:0;transition:border-color .2s}
+.timer-char-toggle{font-family:var(--fm);font-size:11px;color:var(--text3);margin-left:auto}
+.timer-char-grid{display:none}
+.timer-char-grid.open{display:grid}
 .timer-char-name{font-family:var(--fd);font-size:14px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px}
 .timer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .timer-card{background:var(--bg2);border:1px solid var(--border);padding:12px 14px}
@@ -341,7 +346,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
       <div class="slabel" style="margin-bottom:0">Authorized Characters</div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn-p" id="addCharBtn">+ Add Character (EVE SSO)</button>
-        <button class="btn-sm" id="esiSettingsBtn">ESI Setup Info</button>
         <button class="btn-sm" id="refreshAllBtn">&#8635; Refresh All PI</button>
       </div>
     </div>
@@ -1061,7 +1065,7 @@ function renderTimers(){
   var hasAny = false;
   var html = '';
 
-  characters.forEach(function(char){
+  characters.forEach(function(char, charIdx){
     if(!char.piLoaded || !char.piData) return;
 
     var planetRows = [];
@@ -1136,11 +1140,16 @@ function renderTimers(){
 
     planetRows.sort(function(a,b){ return a.expiry - b.expiry; });
 
-    var avatar = '<img src="https://images.evetech.net/characters/'+parseInt(char.charId)+'/portrait?size=32" style="width:28px;height:28px;border:1px solid var(--border2);vertical-align:middle">';
+    var avatar = '<img class="timer-char-avatar" src="https://images.evetech.net/characters/'+parseInt(char.charId)+'/portrait?size=32" onerror="this.style.opacity=\'0.3\'">';
+    var charId = 'tc-'+charIdx;
 
     html += '<div class="timer-char">';
-    html += '<div class="timer-char-hdr">'+avatar+'<span class="timer-char-name">'+char.name+'</span></div>';
-    html += '<div class="timer-grid">';
+    html += '<div class="timer-char-hdr" onclick="var g=document.getElementById(\''+charId+'\');g.classList.toggle(\'open\');this.querySelector(\'.timer-char-toggle\').textContent=g.classList.contains(\'open\')?\'▲ collapse\':\'▼ expand ('+planetRows.length+' planet'+(planetRows.length!==1?'s':'')+')\'">';
+    html += avatar;
+    html += '<span class="timer-char-name">'+char.name+'</span>';
+    html += '<span class="timer-char-toggle">▼ expand ('+planetRows.length+' planet'+(planetRows.length!==1?'s':'')+')</span>';
+    html += '</div>';
+    html += '<div class="timer-grid timer-char-grid" id="'+charId+'">';
 
     planetRows.forEach(function(row){
       var now = Date.now();
@@ -1591,7 +1600,7 @@ function renderCharList(keepOpen){
         avatarHtml +
         '<div class="char-info">' +
           '<div class="char-name">'+(char.name||'Unknown Character')+'</div>' +
-          '<div class="char-meta">Character ID: '+char.charId+' · '+(char.piLoaded?'PI loaded':'Click to load PI data')+'</div>' +
+          '<div class="char-meta">'+(char.piLoaded ? 'PI loaded · click to expand' : 'Click to load PI data')+'</div>' +
         '</div>' +
         '<div class="char-actions">' +
           '<button class="refresh-btn" data-action="refresh-char" data-idx="'+idx+'">Refresh PI</button>' +
@@ -1648,11 +1657,6 @@ document.getElementById('charList').addEventListener('click', function(e){
 });
 
 // ── ESI Setup info panel ──────────────────────────────────
-
-document.getElementById('esiSettingsBtn').addEventListener('click', function(){
-  var s = document.getElementById('esi-setup');
-  s.style.display = s.style.display==='none'?'block':'none';
-});
 document.getElementById('saveEsiSetup').addEventListener('click', function(){
   document.getElementById('esi-setup').style.display='none';
 });
