@@ -1986,6 +1986,25 @@ function renderFuelTab(){
     var icon = itemIcon(row.product, 32);
     var iconHtml = icon ? '<img src="'+icon+'" style="width:22px;height:22px;vertical-align:middle;margin-right:8px;opacity:.85" onerror="this.style.display=\'none\'">' : '';
 
+    // Recommended planet: use existing producers if any, otherwise hardcoded survey suggestion
+    var recPlanet, recType, recNote, recJumps, recIsLive;
+    if(existing.length){
+      // Pull unique systems from existing producers
+      var systems = [];
+      existing.forEach(function(e){ if(e.systemName && systems.indexOf(e.systemName)<0) systems.push(e.systemName); });
+      recPlanet = systems.join(', ') || row.planet;
+      recType = row.type;
+      recNote = 'Already producing — supplement existing colony';
+      recJumps = null; // unknown without gate data
+      recIsLive = true;
+    } else {
+      recPlanet = row.planet;
+      recType = row.type;
+      recNote = row.note;
+      recJumps = row.jumps;
+      recIsLive = false;
+    }
+
     var charHtml = existing.length
       ? existing.map(function(e){
           return '<span style="display:inline-block;font-family:var(--fm);font-size:11px;'+
@@ -1995,6 +2014,10 @@ function renderFuelTab(){
         }).join('')
       : '<span style="color:var(--text3);font-family:var(--fm);font-size:11px">New planet needed</span>';
 
+    var jumpsHtml = recIsLive
+      ? '<span style="font-family:var(--fm);font-size:11px;color:var(--green)">✓ active</span>'
+      : '<span style="font-family:var(--mono);font-size:14px;color:'+(recJumps===0?'var(--green)':'var(--text2)')+'">'+recJumps+'</span>';
+
     planHtml +=
       '<tr style="border-bottom:1px solid var(--border)">'+
       '<td style="padding:9px 12px;white-space:nowrap;vertical-align:middle">'+
@@ -2003,14 +2026,14 @@ function renderFuelTab(){
         ' <span class="badge '+['','t1','t2','t3','t4'][row.tier]+'">P'+row.tier+'</span>'+
       '</td>'+
       '<td style="padding:9px 12px;vertical-align:middle">'+
-        '<div style="font-family:var(--fm);font-size:12px;color:var(--text);white-space:nowrap">'+row.planet+'</div>'+
-        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+row.type+'</div>'+
+        '<div style="font-family:var(--fm);font-size:12px;color:'+(recIsLive?'var(--green)':'var(--text)')+';white-space:nowrap">'+recPlanet+'</div>'+
+        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+recType+'</div>'+
       '</td>'+
       '<td style="padding:9px 12px;vertical-align:middle">'+
         '<div style="font-family:var(--fm);font-size:12px;color:var(--text2)">'+row.chain+'</div>'+
-        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+row.note+'</div>'+
+        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+recNote+'</div>'+
       '</td>'+
-      '<td style="padding:9px 12px;text-align:center;vertical-align:middle;font-family:var(--mono);font-size:14px;color:'+(row.jumps===0?'var(--green)':'var(--text2)')+'">'+row.jumps+'</td>'+
+      '<td style="padding:9px 12px;text-align:center;vertical-align:middle">'+jumpsHtml+'</td>'+
       '<td style="padding:9px 12px;vertical-align:middle">'+charHtml+'</td>'+
       '</tr>';
   });
