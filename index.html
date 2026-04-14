@@ -371,12 +371,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <div>
       <div class="slabel">PI Materials Required</div>
       <div class="twrap"><table>
-        <thead><tr><th>Material</th><th>Tier</th><th class="r">Per Run</th><th class="r">Total</th><th class="r">Jita Sell</th><th>Recommended Planet</th></tr></thead>
+        <thead><tr><th>Material</th><th>Tier</th><th class="r">Per Run</th><th class="r">Total</th><th class="r">Jita Sell</th><th>Currently Producing</th></tr></thead>
         <tbody id="fuelPiBody"></tbody>
         <tfoot id="fuelPiFoot"></tfoot>
       </table></div>
-      <div class="slabel" style="margin-top:16px">PI Production Plan</div>
-      <div id="fuelPiPlan"></div>
     </div>
 
     <!-- Ice / Market Materials -->
@@ -387,10 +385,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
         <tbody id="fuelIceBody"></tbody>
         <tfoot id="fuelIceFoot"></tfoot>
       </table></div>
-      <div class="slabel" style="margin-top:16px">Production Summary</div>
+      <div class="slabel" style="margin-top:16px">Cost Breakdown</div>
       <div class="mgrid" id="fuelSummary"></div>
     </div>
 
+  </div>
+
+  <!-- PI Production Plan — full width below -->
+  <div style="margin-top:28px">
+    <div class="slabel">PI Production Plan</div>
+    <div id="fuelPiPlan"></div>
   </div>
 </div>
 
@@ -1834,6 +1838,30 @@ async function fetchFuelPrices(){
 function renderFuelTab(){
   var runs = parseInt(document.getElementById('fuelRuns').value)||1;
 
+  // Build charProductMap early so PI table can use it too
+  var charProductMap = {};
+  characters.forEach(function(char){
+    if(!char.piLoaded || !char.piData) return;
+    char.piData.forEach(function(planet){
+      (planet.pins||[]).forEach(function(pin){
+        if(!pin.productName) return;
+        var key = pin.productName;
+        if(!charProductMap[key]) charProductMap[key] = [];
+        var already = charProductMap[key].some(function(e){
+          return e.charName === char.name && e.planetId === planet.planet_id;
+        });
+        if(!already){
+          charProductMap[key].push({
+            charName: char.name,
+            planetId: planet.planet_id,
+            planetType: planet.planetTypeName || '',
+            systemName: planet.systemName || ''
+          });
+        }
+      });
+    });
+  });
+
   // PI table
   var piTotalCost = 0, piHasPrices = false;
   document.getElementById('fuelPiBody').innerHTML = FUEL_PI.map(function(m){
@@ -1842,13 +1870,22 @@ function renderFuelTab(){
     var totalCost = price ? price * total : null;
     if(totalCost){ piTotalCost += totalCost; piHasPrices = true; }
     var tierCol = ['','var(--t1-c)','var(--t2-c)','var(--t3-c)','var(--t4-c)'][m.tier]||'var(--text)';
+    var producers = charProductMap[m.name] || [];
+    var producerHtml = producers.length
+      ? producers.map(function(p){
+          return '<span style="display:inline-block;font-family:var(--fm);font-size:11px;'+
+            'background:rgba(0,221,102,0.08);border:1px solid rgba(0,221,102,0.2);'+
+            'color:var(--green);padding:1px 7px;margin:1px 2px 1px 0;border-radius:2px">'+
+            p.charName+(p.systemName?' · '+p.systemName:'')+'</span>';
+        }).join('')
+      : '<span style="font-family:var(--fm);font-size:11px;color:var(--text3)">—</span>';
     return '<tr>'+
       '<td class="mname">'+m.name+'</td>'+
-      '<td><span style="font-family:var(--fm);font-size:9px;color:'+tierCol+'">P'+m.tier+'</span></td>'+
+      '<td><span style="font-family:var(--fm);font-size:11px;color:'+tierCol+'">P'+m.tier+'</span></td>'+
       '<td class="r ival">'+m.perRun+'</td>'+
       '<td class="r ival">'+total.toLocaleString()+'</td>'+
-      '<td class="r">'+(price ? '<span class="ipos">'+fmtISK(totalCost)+'</span><div style="font-size:9px;color:var(--text3);font-family:var(--fm)">'+fmtISK(price)+' ea</div>' : '<span class="ineu">—</span>')+'</td>'+
-      '<td style="font-family:var(--fm);font-size:9px;color:var(--text3);padding:7px 10px">'+m.system+'<div style="color:var(--text3);opacity:.7">'+m.piChain+'</div></td>'+
+      '<td class="r">'+(price ? '<span class="ipos">'+fmtISK(totalCost)+'</span><div style="font-size:11px;color:var(--text3);font-family:var(--fm)">'+fmtISK(price)+' ea</div>' : '<span class="ineu">—</span>')+'</td>'+
+      '<td style="padding:7px 12px">'+producerHtml+'</td>'+
     '</tr>';
   }).join('');
   document.getElementById('fuelPiFoot').innerHTML = '<tr style="border-top:1px solid var(--border2)">'+
@@ -1875,31 +1912,6 @@ function renderFuelTab(){
     '<td colspan="3" style="padding:8px 12px;font-family:var(--fm);font-size:10px;color:var(--text2)">Ice/Market Total</td>'+
     '<td class="r"><span class="'+(iceHasPrices?'ipos':'ineu')+'">'+fmtISK(iceHasPrices?iceTotalCost:null)+'</span></td>'+
     '<td></td></tr>';
-
-  // Build a map of productName -> [{charName, systemName, planetType}] from loaded characters
-  var charProductMap = {};
-  characters.forEach(function(char){
-    if(!char.piLoaded || !char.piData) return;
-    char.piData.forEach(function(planet){
-      (planet.pins||[]).forEach(function(pin){
-        if(!pin.productName) return;
-        var key = pin.productName;
-        if(!charProductMap[key]) charProductMap[key] = [];
-        // Avoid duplicate planet entries per character
-        var already = charProductMap[key].some(function(e){
-          return e.charName === char.name && e.planetId === planet.planet_id;
-        });
-        if(!already){
-          charProductMap[key].push({
-            charName: char.name,
-            planetId: planet.planet_id,
-            planetType: planet.planetTypeName || '',
-            systemName: planet.systemName || ''
-          });
-        }
-      });
-    });
-  });
 
   // PI Production Plan — clean table
   var piPlan = [
@@ -1978,8 +1990,8 @@ function renderFuelTab(){
     '<div class="metric"><div class="m-lbl">Profit Margin</div><div class="m-val '+(margin!=null?(margin>=0?'ipos':'ineg'):'ineu')+'">'+(margin!=null?fmtISK(margin):'—')+'</div><div class="m-sub">'+(marginPct!=null?marginPct+'% return':'After all materials')+'</div></div>';
 
   document.getElementById('fuelSummary').innerHTML =
-    '<div class="metric"><div class="m-lbl">PI Cost</div><div class="m-val '+(piHasPrices?'ineg':'ineu')+'">'+(piHasPrices?fmtISK(piTotalCost):'—')+'</div><div class="m-sub">Self-produced PI</div></div>'+
-    '<div class="metric"><div class="m-lbl">Ice Cost</div><div class="m-val '+(iceHasPrices?'ineg':'ineu')+'">'+(iceHasPrices?fmtISK(iceTotalCost):'—')+'</div><div class="m-sub">Mine or buy</div></div>';
+    '<div class="metric"><div class="m-lbl">PI Materials Cost</div><div class="m-val" style="color:var(--amber)">'+(piHasPrices?fmtISK(piTotalCost):'—')+'</div><div class="m-sub">Jita buy-in value of your self-produced PI</div></div>'+
+    '<div class="metric"><div class="m-lbl">Ice & Market Cost</div><div class="m-val" style="color:var(--amber)">'+(iceHasPrices?fmtISK(iceTotalCost):'—')+'</div><div class="m-sub">Cost to buy isotopes, heavy water, liquid ozone, stront</div></div>';
 }
 
 document.getElementById('fuelRuns').addEventListener('input', renderFuelTab);
