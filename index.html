@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EVE PI Planner — Planetary Interaction Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#080c10;--bg1:#0d1318;--bg2:#111820;--bg3:#19222d;
@@ -13,7 +13,7 @@
   --accent:#00aaff;--accent-glow:rgba(0,170,255,0.15);
   --green:#00e87a;--red:#ff4466;--amber:#ffaa00;
   --text:#c8d8e8;--text2:#6a8aaa;--text3:#3a5a7a;
-  --fd:'Rajdhani',sans-serif;--fm:'Share Tech Mono',monospace;--fb:'Exo 2',sans-serif;
+  --fd:'Rajdhani',sans-serif;--fm:'Inter',sans-serif;--fb:'Exo 2',sans-serif;--mono:'Consolas','Courier New',monospace;
   --t1-bg:rgba(0,102,204,0.15);--t1-c:#55aaff;
   --t2-bg:rgba(0,180,80,0.12);--t2-c:#00dd66;
   --t3-bg:rgba(255,150,0,0.12);--t3-c:#ffaa33;
@@ -29,8 +29,8 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .logo-diamond{width:38px;height:38px;border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;transform:rotate(45deg);flex-shrink:0}
 .logo-diamond-inner{width:18px;height:18px;background:var(--accent)}
 .logo-title{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase}
-.logo-sub{font-family:var(--fm);font-size:10px;color:var(--accent);letter-spacing:2px}
-.hdr-status{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:11px;color:var(--text2)}
+.logo-sub{font-family:var(--fm);font-size:11px;color:var(--accent);letter-spacing:1px}
+.hdr-status{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:12px;color:var(--text2)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .nav{display:flex;gap:2px;margin-bottom:22px;background:var(--bg1);border:1px solid var(--border);padding:4px}
@@ -38,10 +38,10 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .nav-btn:hover{color:var(--text)}
 .nav-btn.active{color:var(--accent);background:var(--accent-glow);border-bottom-color:var(--accent)}
 .tab{display:none}.tab.active{display:block}
-.slabel{font-family:var(--fm);font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.slabel{font-family:var(--fm);font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .slabel::before{content:'›';opacity:.6}
 .sbar{position:relative;margin-bottom:14px}
-.sbar input{width:100% !important;padding:10px 16px !important;background:rgba(0,221,102,0.07) !important;border:1px solid var(--border) !important;color:var(--text) !important;font-family:var(--fm);font-size:12px;outline:none;transition:background .2s,border-color .2s}
+.sbar input{width:100% !important;padding:10px 16px !important;background:rgba(0,221,102,0.07) !important;border:1px solid var(--border) !important;color:var(--text) !important;font-family:var(--fm);font-size:13px;outline:none;transition:background .2s,border-color .2s}
 .sbar input:focus{background:rgba(0,221,102,0.12) !important;border-color:rgba(0,221,102,0.4) !important}
 .sbar input::placeholder{color:var(--text3)}
 #taxRate::-webkit-inner-spin-button,#taxRate::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
@@ -51,7 +51,7 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .tier-layout.cols4{grid-template-columns:repeat(4,1fr)}
 .tier-col{display:flex;flex-direction:column;border-right:1px solid var(--border)}
 .tier-col:last-child{border-right:none}
-.tier-col-header{padding:8px 10px;font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:600;text-align:center;border-bottom:1px solid var(--border)}
+.tier-col-header{padding:8px 10px;font-family:var(--fm);font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;text-align:center;border-bottom:1px solid var(--border)}
 .tc-p0 .tier-col-header{color:#8899bb;background:rgba(136,153,187,0.08)}
 .tc-p1 .tier-col-header{color:var(--t1-c);background:var(--t1-bg)}
 .tc-p2 .tier-col-header{color:var(--t2-c);background:var(--t2-bg)}
@@ -66,45 +66,45 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .pcard-p0{border-left:2px solid rgba(136,153,187,0.4);cursor:default}
 .pcard-p0:hover{border-color:rgba(136,153,187,0.4)!important;background:var(--bg2)!important}
 .pcard-p0 .pname{color:#8899bb;font-size:11px}
-.badge{font-family:var(--fm);font-size:9px;padding:2px 6px;letter-spacing:1px;border:1px solid}
+.badge{font-family:var(--fm);font-size:11px;padding:2px 8px;letter-spacing:.5px;border:1px solid}
 .t1{background:var(--t1-bg);color:var(--t1-c);border-color:rgba(85,170,255,.25)}
 .t2{background:var(--t2-bg);color:var(--t2-c);border-color:rgba(0,221,102,.25)}
 .t3{background:var(--t3-bg);color:var(--t3-c);border-color:rgba(255,170,51,.25)}
 .t4{background:var(--t4-bg);color:var(--t4-c);border-color:rgba(204,119,255,.25)}
-.ptag{font-family:var(--fm);font-size:9px;padding:2px 7px;letter-spacing:.5px;display:inline-block;margin:1px}
+.ptag{font-family:var(--fm);font-size:11px;padding:3px 8px;letter-spacing:.3px;display:inline-block;margin:1px}
 .divider{height:1px;background:var(--border);margin:18px 0;position:relative}
 .divider::after{content:'';position:absolute;left:0;top:0;width:60px;height:1px;background:var(--accent)}
 .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
 .metric{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden}
 .metric::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent)}
-.m-lbl{font-family:var(--fm);font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.m-lbl{font-family:var(--fm);font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
 .m-val{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;line-height:1}
-.m-sub{font-family:var(--fm);font-size:9px;color:var(--text3);margin-top:4px}
+.m-sub{font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:4px}
 .twrap{overflow-x:auto;margin-bottom:18px;overflow-y:visible}
 table{width:100%;border-collapse:collapse;font-size:13px;overflow:visible}
 thead tr{background:var(--bg2);border-bottom:1px solid var(--border2)}
-th{font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;padding:10px 12px;text-align:left;font-weight:400;white-space:nowrap}
+th{font-family:var(--fm);font-size:11px;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;padding:10px 12px;text-align:left;font-weight:600;white-space:nowrap}
 th.r{text-align:right}
-td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;overflow:visible}
-td.r{text-align:right;font-family:var(--fm)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;overflow:visible;font-size:13px;line-height:1.4}
+td.r{text-align:right;font-family:var(--mono)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(0,170,255,.03)}
 .mname{font-family:var(--fd);font-size:13px;font-weight:500;color:#ddeeff;text-transform:uppercase;letter-spacing:.3px}
-.istr{font-size:11px;color:var(--text2);font-family:var(--fm)}
-.ipos{color:var(--green);font-family:var(--fm)}
-.ineu{color:var(--text2);font-family:var(--fm)}
-.ineg{color:var(--red);font-family:var(--fm)}
+.istr{font-size:12px;color:var(--text2);font-family:var(--fm)}
+.ipos{color:var(--green);font-family:var(--mono)}
+.ineu{color:var(--text2);font-family:var(--mono)}
+.ineg{color:var(--red);font-family:var(--mono)}
 /* Sell point analysis */
 .sell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:18px}
 .sell-card{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;position:relative}
 .sell-card.best{border-color:var(--green);background:rgba(0,221,102,0.04)}
-.sell-card.best::after{content:'BEST';position:absolute;top:8px;right:10px;font-family:var(--fm);font-size:9px;color:var(--green);letter-spacing:1.5px}
-.sell-tier{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
-.sell-products{font-family:var(--fm);font-size:10px;color:var(--text2);margin-bottom:10px;line-height:1.6}
+.sell-card.best::after{content:'BEST';position:absolute;top:8px;right:10px;font-family:var(--fm);font-size:11px;color:var(--green);letter-spacing:1px}
+.sell-tier{font-family:var(--fm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.sell-products{font-family:var(--fm);font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6}
 .sell-revenue{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--green);margin-bottom:2px}
 .sell-revenue.no-price{color:var(--text3);font-size:14px}
-.sell-note{font-family:var(--fm);font-size:9px;color:var(--text3);line-height:1.5}
-.ival{font-family:var(--fm);color:var(--text)}
+.sell-note{font-family:var(--fm);font-size:11px;color:var(--text3);line-height:1.5}
+.ival{font-family:var(--mono);color:var(--text)}
 input[type=number],input[type=text]{background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:13px;padding:7px 10px;outline:none;transition:border-color .2s}
 input[type=number]:focus,input[type=text]:focus{border-color:var(--accent)}
 .qinp{width:72px;text-align:center}
@@ -115,21 +115,21 @@ button{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:1px;t
 .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
 .frow{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
 .frow input{flex:1;min-width:200px}
-.fstatus{font-family:var(--fm);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.fstatus{font-family:var(--fm);font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
 .spin{width:11px;height:11px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .cvis{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:18px;padding:14px;background:var(--bg2);border:1px solid var(--border)}
 .ctier{display:flex;flex-direction:column;gap:4px}
-.ctier-lbl{font-family:var(--fm);font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.ctier-lbl{font-family:var(--fm);font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
 .cnode{background:var(--bg3);border:1px solid var(--border2);padding:6px 10px;min-width:110px}
 .cn-name{font-family:var(--fd);font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.3px}
-.cn-qty{font-family:var(--fm);font-size:10px;color:var(--text3)}
+.cn-qty{font-family:var(--fm);font-size:11px;color:var(--text3)}
 .carrow{color:var(--border2);font-size:18px;align-self:center;padding-top:22px;flex-shrink:0}
 .pillrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:30px;align-items:center}
 .pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--accent);color:var(--accent);font-family:var(--fd);font-size:12px;font-weight:600;letter-spacing:1px;padding:4px 12px;text-transform:uppercase}
 .pill-x{color:var(--text3);cursor:pointer;font-size:16px;line-height:1;border:none;background:none;padding:0}
 .pill-x:hover{color:var(--red)}
-.pill-empty{font-family:var(--fm);font-size:11px;color:var(--text3)}
+.pill-empty{font-family:var(--fm);font-size:12px;color:var(--text3)}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:8px;margin-bottom:14px}
 .ccard{background:var(--bg2);border:1px solid var(--border);padding:14px;border-top:2px solid}
 .ct1{border-top-color:var(--t1-c)}.ct2{border-top-color:var(--t2-c)}.ct3{border-top-color:var(--t3-c)}.ct4{border-top-color:var(--t4-c)}
@@ -137,17 +137,17 @@ button{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:1px;t
 .cc-tier{margin-bottom:10px}
 .cc-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
 .cc-row:last-child{border-bottom:none}
-.cc-key{color:var(--text2);font-family:var(--fm);font-size:10px}
-.cc-val{font-family:var(--fm);font-size:11px;color:var(--text)}
+.cc-key{color:var(--text2);font-family:var(--fm);font-size:11px}
+.cc-val{font-family:var(--fm);font-size:12px;color:var(--text)}
 .colcard{background:var(--bg2);border:1px solid var(--border);padding:16px;margin-bottom:10px}
 .col-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .col-name{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase}
 .frow2{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .fblock{background:var(--bg3);border:1px solid var(--border2);padding:8px 12px;min-width:105px}
-.fb-lbl{font-family:var(--fm);font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.fb-lbl{font-family:var(--fm);font-size:11px;color:var(--text3);letter-spacing:.3px;text-transform:uppercase;margin-bottom:3px}
 .fb-val{font-family:var(--fd);font-size:13px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.3px}
 .rrow{display:grid;grid-template-columns:175px 1fr 65px;align-items:center;gap:12px;margin-bottom:12px}
-.rlbl{font-family:var(--fm);font-size:11px;color:var(--text2)}
+.rlbl{font-family:var(--fm);font-size:12px;color:var(--text2)}
 input[type=range]{-webkit-appearance:none;appearance:none;height:3px;background:var(--border2);outline:none;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--accent);cursor:pointer;border:none;border-radius:0}
@@ -158,8 +158,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .card-title{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
 .detail-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .detail-title{font-family:var(--fd);font-size:18px;font-weight:700;color:#fff;letter-spacing:1.5px;text-transform:uppercase}
-.hint{font-family:var(--fm);font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:6px}
-.empty{text-align:center;padding:36px 0;color:var(--text3);font-family:var(--fm);font-size:12px;letter-spacing:1px}
+.hint{font-family:var(--fm);font-size:11px;color:var(--text3);letter-spacing:.5px;margin-bottom:6px}
+.empty{text-align:center;padding:36px 0;color:var(--text3);font-family:var(--fm);font-size:13px;letter-spacing:.5px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2)}
@@ -178,17 +178,17 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .timer-card.urgent{border-left:3px solid var(--amber)}
 .timer-card.ok{border-left:3px solid var(--green)}
 .timer-planet{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
-.timer-product{font-family:var(--fm);font-size:10px;color:var(--text2);margin-bottom:8px;letter-spacing:.3px}
+.timer-product{font-family:var(--fm);font-size:12px;color:var(--text2);margin-bottom:8px}
 .timer-countdown{font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:1px}
 .timer-countdown.expired{color:var(--red)}
 .timer-countdown.urgent{color:var(--amber)}
 .timer-countdown.ok{color:var(--green)}
-.timer-expiry{font-family:var(--fm);font-size:9px;color:var(--text3);margin-top:4px}
+.timer-expiry{font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:4px}
 .char-avatars{display:inline-flex;gap:2px;align-items:center;margin-left:6px;vertical-align:middle}
 .char-pip{position:relative;display:inline-block}
 .char-pip img{width:20px;height:20px;border:1px solid var(--border2);border-radius:2px;display:inline-block;object-fit:cover;cursor:default;vertical-align:middle}
 .char-pip img:hover{border-color:var(--accent)}
-.char-pip .char-tip{position:absolute;bottom:calc(100% + 4px);left:0;transform:none;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-family:var(--fm);font-size:10px;padding:3px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;letter-spacing:.3px}
+.char-pip .char-tip{position:absolute;bottom:calc(100% + 4px);left:0;transform:none;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-family:var(--fm);font-size:11px;padding:3px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;letter-spacing:.3px}
 .char-pip:hover .char-tip{opacity:1}
 /* portraits inside grid cards */
 .pcard-pips{display:flex;gap:2px;flex-wrap:wrap;margin-top:4px}
@@ -200,7 +200,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .char-avatar-placeholder{width:44px;height:44px;border:1px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:700;color:var(--accent);flex-shrink:0}
 .char-info{flex:1;min-width:0}
 .char-name{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
-.char-meta{font-family:var(--fm);font-size:10px;color:var(--text2);letter-spacing:.5px}
+.char-meta{font-family:var(--fm);font-size:12px;color:var(--text2);letter-spacing:.3px}
 .char-actions{display:flex;gap:6px;align-items:center}
 .char-body{border-top:1px solid var(--border);padding:14px 16px}
 .planet-row{display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -209,7 +209,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .planet-details{min-width:0}
 .planet-name{font-family:var(--fd);font-size:13px;font-weight:600;color:#ddeeff;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
 .planet-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.chip{font-family:var(--fm);font-size:9px;padding:2px 7px;letter-spacing:.5px;border:1px solid}
+.chip{font-family:var(--fm);font-size:11px;padding:3px 9px;letter-spacing:.3px;border:1px solid;border-radius:2px}
 .chip-ext{background:rgba(136,153,187,0.08);color:#8899bb;border-color:rgba(136,153,187,0.2)}
 .chip-p1{background:var(--t1-bg);color:var(--t1-c);border-color:rgba(85,170,255,.2)}
 .chip-p2{background:var(--t2-bg);color:var(--t2-c);border-color:rgba(0,221,102,.2)}
@@ -217,12 +217,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .chip-lp{background:rgba(0,200,255,0.08);color:#00ccff;border-color:rgba(0,200,255,0.2)}
 .chip-sf{background:rgba(180,100,255,0.08);color:#bb66ff;border-color:rgba(180,100,255,0.2)}
 .chip-p4{background:var(--t4-bg);color:var(--t4-c);border-color:rgba(204,119,255,.2)}
-.refresh-btn{font-family:var(--fm);font-size:9px;padding:3px 8px;background:none;border:1px solid var(--border2);color:var(--text2);cursor:pointer;letter-spacing:.5px;text-transform:uppercase}
+.refresh-btn{font-family:var(--fm);font-size:11px;padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--text2);cursor:pointer;letter-spacing:.3px;text-transform:uppercase}
 .refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn-danger{background:none;border:1px solid var(--red);color:var(--red);padding:5px 10px;font-size:11px}
 .btn-danger:hover{background:rgba(255,68,102,0.1)}
-.char-loading{font-family:var(--fm);font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px;padding:12px 0}
-.char-err{font-family:var(--fm);font-size:11px;color:var(--red);padding:8px 0}
+.char-loading{font-family:var(--fm);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;padding:12px 0}
+.char-err{font-family:var(--fm);font-size:12px;color:var(--red);padding:8px 0}
 </style>
 </head>
 <body>
@@ -244,6 +244,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
   <button class="nav-btn" data-tab="multi">Multi-Product</button>
   <button class="nav-btn" data-tab="colony">Planet Extraction Timers</button>
   <button class="nav-btn" data-tab="characters">Characters</button>
+  <button class="nav-btn" data-tab="fuel">Fuel Block Production</button>
 </nav>
 
 <!-- CHAIN TAB -->
@@ -347,6 +348,50 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <div id="charList"></div>
   </div>
 
+</div>
+
+<!-- FUEL BLOCK PRODUCTION TAB -->
+<div id="tab-fuel" class="tab">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div class="slabel" style="margin-bottom:0">Nitrogen Fuel Block Production — W-IX39 Sakura</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">RUNS (40 blocks ea)</span>
+      <input type="number" id="fuelRuns" style="width:56px;padding:5px 6px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:13px;text-align:center" value="1" min="1" max="9999">
+      <button class="btn-p" id="fuelFetchBtn">Fetch Prices (Janice)</button>
+      <div class="fstatus" id="fuelFetchStatus"></div>
+    </div>
+  </div>
+
+  <!-- Summary metrics -->
+  <div class="mgrid" id="fuelMetrics"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
+
+    <!-- PI Materials -->
+    <div>
+      <div class="slabel">PI Materials Required</div>
+      <div class="twrap"><table>
+        <thead><tr><th>Material</th><th>Tier</th><th class="r">Per Run</th><th class="r">Total</th><th class="r">Jita Sell</th><th>Recommended Planet</th></tr></thead>
+        <tbody id="fuelPiBody"></tbody>
+        <tfoot id="fuelPiFoot"></tfoot>
+      </table></div>
+      <div class="slabel" style="margin-top:16px">PI Production Plan</div>
+      <div id="fuelPiPlan"></div>
+    </div>
+
+    <!-- Ice / Market Materials -->
+    <div>
+      <div class="slabel">Ice & Market Materials</div>
+      <div class="twrap"><table>
+        <thead><tr><th>Material</th><th>Source</th><th class="r">Per Run</th><th class="r">Total</th><th class="r">Jita Sell</th></tr></thead>
+        <tbody id="fuelIceBody"></tbody>
+        <tfoot id="fuelIceFoot"></tfoot>
+      </table></div>
+      <div class="slabel" style="margin-top:16px">Production Summary</div>
+      <div class="mgrid" id="fuelSummary"></div>
+    </div>
+
+  </div>
 </div>
 
 </div><!-- /app -->
@@ -1681,10 +1726,242 @@ document.getElementById('refreshAllBtn').addEventListener('click', async functio
   btn.textContent = '\u21BB Refresh All PI';
 });
 
+// ════════════════════════════════════════════════════════
+//  FUEL BLOCK PRODUCTION TAB
+// ════════════════════════════════════════════════════════
+
+// Nitrogen Fuel Block blueprint — 1 run = 40 blocks (Skoli confirmed)
+var FUEL_RUNS_PER_BATCH = 40;
+var FUEL_OUTPUT_NAME = 'Nitrogen Fuel Block';
+
+// PI materials per run (batch of 40 blocks), base BPO (ME0)
+// At ME10: multiply by 0.90; we show ME0 as base, user can see the chain
+var FUEL_PI = [
+  {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII', piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
+  {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
+  {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',   piChain:'Barren → Reactive Metals + Precious Metals'},
+  {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',    piChain:'Gas → Noble Gas → Oxygen'},
+  {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II',piChain:'Lava → Consumer Electronics + Mech Parts'},
+];
+
+// Ice / market materials per run
+var FUEL_ICE = [
+  {name:'Nitrogen Isotopes',   source:'Mine / Buy', perRun:450},
+  {name:'Heavy Water',         source:'Mine / Buy', perRun:170},
+  {name:'Liquid Ozone',        source:'Mine / Buy', perRun:350},
+  {name:'Strontium Clathrates',source:'Mine / Buy', perRun:20},
+];
+
+// Prices cache for fuel tab
+var fuelPrices = {};
+
+async function fetchFuelPrices(){
+  var btn = document.getElementById('fuelFetchBtn');
+  var status = document.getElementById('fuelFetchStatus');
+  btn.disabled = true; status.textContent = 'Fetching…';
+  try{
+    var names = FUEL_PI.map(function(m){return m.name;})
+      .concat(FUEL_ICE.map(function(m){return m.name;}))
+      .concat([FUEL_OUTPUT_NAME]);
+    var resp = await fetch('https://janice.e-351.com/api/rest/v2/pricer?market=2&designation=appraisal&pricing=immediate&pricingVariant=sell&persist=false&compactize=true&pricePercentage=1',{
+      method:'POST',
+      headers:{'Content-Type':'text/plain','X-ApiKey':JANICE_KEY},
+      body: names.join('\n')
+    });
+    var data = await resp.json();
+    (data.items||data.itemPrices||[]).forEach(function(item){
+      var n = item.name || item.itemType?.name;
+      var p = item.immediate?.sell?.price || item.sellPrice || item.immediatePrices?.sellPrice;
+      if(n && p) fuelPrices[n] = p;
+    });
+    status.textContent = 'Prices loaded';
+    setTimeout(function(){status.textContent='';},3000);
+  } catch(e){ status.textContent = 'Error: '+e.message; }
+  btn.disabled = false;
+  renderFuelTab();
+}
+
+function renderFuelTab(){
+  var runs = parseInt(document.getElementById('fuelRuns').value)||1;
+
+  // PI table
+  var piTotalCost = 0, piHasPrices = false;
+  document.getElementById('fuelPiBody').innerHTML = FUEL_PI.map(function(m){
+    var total = m.perRun * runs;
+    var price = fuelPrices[m.name] || null;
+    var totalCost = price ? price * total : null;
+    if(totalCost){ piTotalCost += totalCost; piHasPrices = true; }
+    var tierCol = ['','var(--t1-c)','var(--t2-c)','var(--t3-c)','var(--t4-c)'][m.tier]||'var(--text)';
+    return '<tr>'+
+      '<td class="mname">'+m.name+'</td>'+
+      '<td><span style="font-family:var(--fm);font-size:9px;color:'+tierCol+'">P'+m.tier+'</span></td>'+
+      '<td class="r ival">'+m.perRun+'</td>'+
+      '<td class="r ival">'+total.toLocaleString()+'</td>'+
+      '<td class="r">'+(price ? '<span class="ipos">'+fmtISK(totalCost)+'</span><div style="font-size:9px;color:var(--text3);font-family:var(--fm)">'+fmtISK(price)+' ea</div>' : '<span class="ineu">—</span>')+'</td>'+
+      '<td style="font-family:var(--fm);font-size:9px;color:var(--text3);padding:7px 10px">'+m.system+'<div style="color:var(--text3);opacity:.7">'+m.piChain+'</div></td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('fuelPiFoot').innerHTML = '<tr style="border-top:1px solid var(--border2)">'+
+    '<td colspan="4" style="padding:8px 12px;font-family:var(--fm);font-size:10px;color:var(--text2)">PI Total</td>'+
+    '<td class="r"><span class="'+(piHasPrices?'ipos':'ineu')+'">'+fmtISK(piHasPrices?piTotalCost:null)+'</span></td>'+
+    '<td></td></tr>';
+
+  // Ice table
+  var iceTotalCost = 0, iceHasPrices = false;
+  document.getElementById('fuelIceBody').innerHTML = FUEL_ICE.map(function(m){
+    var total = m.perRun * runs;
+    var price = fuelPrices[m.name] || null;
+    var totalCost = price ? price * total : null;
+    if(totalCost){ iceTotalCost += totalCost; iceHasPrices = true; }
+    return '<tr>'+
+      '<td class="mname">'+m.name+'</td>'+
+      '<td style="font-family:var(--fm);font-size:9px;color:var(--text3);padding:7px 10px">'+m.source+'</td>'+
+      '<td class="r ival">'+m.perRun+'</td>'+
+      '<td class="r ival">'+total.toLocaleString()+'</td>'+
+      '<td class="r">'+(price ? '<span class="ipos">'+fmtISK(totalCost)+'</span><div style="font-size:9px;color:var(--text3);font-family:var(--fm)">'+fmtISK(price)+' ea</div>' : '<span class="ineu">—</span>')+'</td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('fuelIceFoot').innerHTML = '<tr style="border-top:1px solid var(--border2)">'+
+    '<td colspan="3" style="padding:8px 12px;font-family:var(--fm);font-size:10px;color:var(--text2)">Ice/Market Total</td>'+
+    '<td class="r"><span class="'+(iceHasPrices?'ipos':'ineu')+'">'+fmtISK(iceHasPrices?iceTotalCost:null)+'</span></td>'+
+    '<td></td></tr>';
+
+  // Build a map of productName -> [{charName, systemName, planetType}] from loaded characters
+  var charProductMap = {};
+  characters.forEach(function(char){
+    if(!char.piLoaded || !char.piData) return;
+    char.piData.forEach(function(planet){
+      (planet.pins||[]).forEach(function(pin){
+        if(!pin.productName) return;
+        var key = pin.productName;
+        if(!charProductMap[key]) charProductMap[key] = [];
+        // Avoid duplicate planet entries per character
+        var already = charProductMap[key].some(function(e){
+          return e.charName === char.name && e.planetId === planet.planet_id;
+        });
+        if(!already){
+          charProductMap[key].push({
+            charName: char.name,
+            planetId: planet.planet_id,
+            planetType: planet.planetTypeName || '',
+            systemName: planet.systemName || ''
+          });
+        }
+      });
+    });
+  });
+
+  // PI Production Plan
+  var planHtml = '<div style="font-family:var(--fm);font-size:11px;line-height:2;color:var(--text2)">';
+  var piPlan = [
+    {
+      product: 'Oxygen',
+      tier: 1,
+      system: 'W-IX39',
+      planet: 'W-IX39 VI (Gas)',
+      jumps: 0,
+      chain: 'Noble Gas → Oxygen',
+      note: 'Dedicate 1 Gas planet entirely to Oxygen — 22 units needed per run, highest PI volume'
+    },
+    {
+      product: 'Coolant',
+      tier: 2,
+      system: 'W-IX39',
+      planet: 'W-IX39 V (Storm) + W-IX39 VII (Gas)',
+      jumps: 0,
+      chain: 'Ionic Solutions (Storm) + Oxidizing Compound (Gas) → Coolant',
+      note: 'Run factory on Storm V. Feed Oxidizing Compound from Gas VII. 9 units/run needed'
+    },
+    {
+      product: 'Mechanical Parts',
+      tier: 2,
+      system: 'K7D-II',
+      planet: 'K7D-II VII (Barren)',
+      jumps: 2,
+      chain: 'Reactive Metals + Precious Metals → Mechanical Parts',
+      note: 'Barren for Reactive Metals; import Precious Metals from Lava. Already active in K7D-II'
+    },
+    {
+      product: 'Enriched Uranium',
+      tier: 2,
+      system: 'K7D-II',
+      planet: 'K7D-II III or VI (Lava)',
+      jumps: 2,
+      chain: 'Precious Metals + Toxic Metals → Enriched Uranium',
+      note: 'Both inputs on Lava — no Plasma needed. K7D-II VI has highest output (955 M.Gas/h)'
+    },
+    {
+      product: 'Robotics',
+      tier: 3,
+      system: 'P4-3TJ / K7D-II',
+      planet: 'P4-3TJ I (Lava) → Consumer Electronics; factory on K7D-II Barren',
+      jumps: 2,
+      chain: 'Toxic Metals → Consumer Electronics (Lava) + Mechanical Parts → Robotics',
+      note: 'P4-3TJ I has high Lava output. Route CE to K7D-II factory planet. Only 1 unit/run'
+    },
+  ];
+  planHtml += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-bottom:8px">Based on DOTLAN survey of W-IX39, K7D-II (home), C-9RRR, and P4-3TJ within 2 jumps. No Plasma found — Enriched Uranium routed via Lava planets.</div>';
+  var tierColors = ['','var(--t1-c)','var(--t2-c)','var(--t3-c)'];
+  piPlan.forEach(function(row){
+    var tc = tierColors[row.tier] || 'var(--text)';
+    var existing = charProductMap[row.product] || [];
+
+    planHtml += '<div style="padding:7px 0;border-bottom:1px solid var(--border)">';
+    planHtml += '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">';
+    planHtml += '<span style="font-family:var(--fd);font-size:13px;color:'+tc+';font-weight:600">'+row.product+'</span>';
+    planHtml += '<span style="font-family:var(--fm);font-size:9px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:2px;color:'+tc+'">P'+row.tier+'</span>';
+    if(existing.length){
+      planHtml += '<span style="font-family:var(--fm);font-size:9px;color:var(--green)">✓ Already producing ('+existing.length+' planet'+(existing.length>1?'s':'')+')</span>';
+    }
+    planHtml += '<span style="font-family:var(--fm);font-size:9px;color:var(--text3);margin-left:auto">'+row.jumps+' jump'+(row.jumps!==1?'s':'')+' from W-IX39</span>';
+    planHtml += '</div>';
+
+    // Show existing producers
+    if(existing.length){
+      planHtml += '<div style="margin-bottom:4px">';
+      existing.forEach(function(e){
+        var sys = e.systemName ? ' · '+e.systemName : '';
+        planHtml += '<span style="display:inline-block;font-family:var(--fm);font-size:9px;background:rgba(0,221,102,0.08);border:1px solid rgba(0,221,102,0.2);color:var(--green);padding:1px 7px;margin:1px 3px 1px 0">'+e.charName+' · '+e.planetType+sys+'</span>';
+      });
+      planHtml += '</div>';
+    }
+
+    planHtml += '<div style="color:var(--text3);margin-bottom:2px;font-family:var(--fm);font-size:10px">'+row.planet+'</div>';
+    planHtml += '<div style="font-family:var(--fm);font-size:9px;color:var(--green);margin-bottom:2px">'+row.chain+'</div>';
+    planHtml += '<div style="font-family:var(--fm);font-size:9px;color:var(--text3)">'+row.note+'</div>';
+    planHtml += '</div>';
+  });
+  planHtml += '</div>';
+  document.getElementById('fuelPiPlan').innerHTML = planHtml;
+
+  // Output blocks
+  var blocksOut = FUEL_RUNS_PER_BATCH * runs;
+  var outputPrice = fuelPrices[FUEL_OUTPUT_NAME] || null;
+  var outputRev = outputPrice ? outputPrice * blocksOut : null;
+  var totalMat = (piHasPrices ? piTotalCost : 0) + (iceHasPrices ? iceTotalCost : 0);
+  var hasAllPrices = piHasPrices && iceHasPrices;
+  var margin = (outputRev && hasAllPrices) ? outputRev - totalMat : null;
+  var marginPct = (margin && totalMat > 0) ? Math.round(margin / totalMat * 100) : null;
+
+  document.getElementById('fuelMetrics').innerHTML =
+    '<div class="metric"><div class="m-lbl">Blocks Produced</div><div class="m-val">'+blocksOut.toLocaleString()+'</div><div class="m-sub">'+runs+' run'+(runs>1?'s':'')+' × '+FUEL_RUNS_PER_BATCH+'</div></div>'+
+    '<div class="metric"><div class="m-lbl">Output Value</div><div class="m-val '+(outputRev?'ipos':'ineu')+'">'+(outputRev?fmtISK(outputRev):'—')+'</div><div class="m-sub">'+(outputPrice?fmtISK(outputPrice)+' ea Jita':'Fetch prices first')+'</div></div>'+
+    '<div class="metric"><div class="m-lbl">Total Materials</div><div class="m-val '+(hasAllPrices?'ineg':'ineu')+'">'+(hasAllPrices?fmtISK(totalMat):'—')+'</div><div class="m-sub">PI + Ice/Market</div></div>'+
+    '<div class="metric"><div class="m-lbl">Profit Margin</div><div class="m-val '+(margin!=null?(margin>=0?'ipos':'ineg'):'ineu')+'">'+(margin!=null?fmtISK(margin):'—')+'</div><div class="m-sub">'+(marginPct!=null?marginPct+'% return':'After all materials')+'</div></div>';
+
+  document.getElementById('fuelSummary').innerHTML =
+    '<div class="metric"><div class="m-lbl">PI Cost</div><div class="m-val '+(piHasPrices?'ineg':'ineu')+'">'+(piHasPrices?fmtISK(piTotalCost):'—')+'</div><div class="m-sub">Self-produced PI</div></div>'+
+    '<div class="metric"><div class="m-lbl">Ice Cost</div><div class="m-val '+(iceHasPrices?'ineg':'ineu')+'">'+(iceHasPrices?fmtISK(iceTotalCost):'—')+'</div><div class="m-sub">Mine or buy</div></div>';
+}
+
+document.getElementById('fuelRuns').addEventListener('input', renderFuelTab);
+document.getElementById('fuelFetchBtn').addEventListener('click', fetchFuelPrices);
+
 renderChainGrid(ALL);
 renderMultiGrid(ALL);
 renderCharList();
 renderTimers();
+renderFuelTab();
 handleOAuthCallback();
 </script>
 </body>
