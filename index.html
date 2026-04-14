@@ -496,6 +496,42 @@ var SCH = {
   "Wetware Mainframe":          {tier:4,inputs:{"Supercomputers":6,"Biotech Research Reports":6,"Cryoprotectant Solution":6},perRun:1}
 };
 
+// EVE type IDs for item icons — https://images.evetech.net/types/{id}/icon?size=64
+var PI_TYPE_IDS = {
+  // P1
+  "Bacteria":2393,"Biofuels":2396,"Biomass":3779,"Chiral Structures":2401,
+  "Electrolytes":2390,"Industrial Fibers":2397,"Oxidizing Compound":2392,
+  "Oxygen":3683,"Plasmoids":2389,"Precious Metals":2399,"Proteins":2395,
+  "Reactive Metals":2398,"Silicon":9828,"Toxic Metals":2400,"Water":2267,
+  // P2
+  "Biocells":2463,"Construction Blocks":3828,"Consumer Electronics":9836,
+  "Coolant":9832,"Enriched Uranium":44,"Fertilizer":3825,
+  "Genetically Enhanced Livestock":3812,"Livestock":3813,
+  "Mechanical Parts":3689,"Microfiber Shielding":3832,"Miniature Electronics":9838,
+  "Nanites":9842,"Oxides":2868,"Polyaramids":3835,"Polytextiles":3836,
+  "Rocket Fuel":9850,"Silicate Glass":9849,"Superconductors":9840,
+  "Supertensile Plastics":3829,"Synthetic Oil":9830,"Test Cultures":3826,
+  "Transmitter":9834,"Viral Agent":2877,"Water-Cooled CPU":9846,
+  // P3
+  "Biotech Research Reports":2358,"Camera Drones":2345,"Condensates":17392,
+  "Cryoprotectant Solution":2367,"Data Chips":2344,"Gel-Matrix Biopaste":2348,
+  "Guidance Systems":17393,"Hazmat Detection Systems":2366,
+  "Hermetic Membranes":2361,"High-Tech Transmitters":17898,
+  "Industrial Explosives":2360,"Neocoms":2354,"Nuclear Reactors":2352,
+  "Planetary Vehicles":2870,"Robotics":9848,"Smartfab Units":2351,
+  "Supercomputers":2349,"Synthetic Synapses":17136,
+  "Transcranial Microcontrollers":2346,"Ukomi Superconductors":28974,"Vaccines":2869,
+  // P4
+  "Broadcast Node":2867,"Integrity Response Drones":2876,
+  "Nano-Factory":2871,"Organic Mortar Applicators":2875,
+  "Recursive Computing Module":2872,"Self-Harmonizing Power Core":2873,
+  "Sterile Conduits":2874,"Wetware Mainframe":2875
+};
+function itemIcon(name,size){
+  var id=PI_TYPE_IDS[name];
+  return id?'https://images.evetech.net/types/'+id+'/icon?size='+(size||64):'';
+}
+
 var PLANET_COLORS = {
   Barren:["#3d1a0a","#ff8855"],Temperate:["#0a2010","#44cc77"],
   Gas:["#0a1830","#4499ff"],Ice:["#0a2020","#44ddcc"],
@@ -619,7 +655,12 @@ function buildTierLayout(prods,action,selList,showP0,cmap){
             '</span>';
           }).join('')+'</div>'
         : '';
-      return'<div class="'+cls+'" data-action="'+action+'" data-name="'+n+'"><div class="pname">'+n+'</div>'+pips+'</div>';
+      var icon=itemIcon(n,64);
+      var imgHtml=icon?'<img src="'+icon+'" alt="" style="width:42px;height:42px;flex-shrink:0;opacity:.85;image-rendering:auto" onerror="this.style.display=\'none\'">':'';
+      return'<div class="'+cls+'" data-action="'+action+'" data-name="'+n+'" style="display:flex;align-items:center;gap:7px;padding:6px 8px">'+
+        '<div style="flex:1;min-width:0"><div class="pname">'+n+'</div>'+pips+'</div>'+
+        imgHtml+
+      '</div>';
     }).join('');
     return'<div class="tier-col '+col.cls+'"><div class="tier-col-header">'+col.label+'</div><div class="tier-col-body">'+cards+'</div></div>';
   }).join('')+'</div>';
@@ -1763,20 +1804,29 @@ async function fetchFuelPrices(){
     var names = FUEL_PI.map(function(m){return m.name;})
       .concat(FUEL_ICE.map(function(m){return m.name;}))
       .concat([FUEL_OUTPUT_NAME]);
-    var resp = await fetch('https://janice.e-351.com/api/rest/v2/pricer?market=2&designation=appraisal&pricing=immediate&pricingVariant=sell&persist=false&compactize=true&pricePercentage=1',{
+    var resp = await fetch('https://janice.e-351.com/api/rest/v2/pricer?market=2',{
       method:'POST',
       headers:{'Content-Type':'text/plain','X-ApiKey':JANICE_KEY},
       body: names.join('\n')
     });
+    if(!resp.ok) throw new Error('Janice HTTP '+resp.status);
     var data = await resp.json();
-    (data.items||data.itemPrices||[]).forEach(function(item){
-      var n = item.name || item.itemType?.name;
-      var p = item.immediate?.sell?.price || item.sellPrice || item.immediatePrices?.sellPrice;
-      if(n && p) fuelPrices[n] = p;
+    var found = 0;
+    data.forEach(function(item){
+      var n = item.itemType && item.itemType.name;
+      if(!n) return;
+      var p = null;
+      if(item.immediatePrices && item.immediatePrices.sellPrice != null)
+        p = item.immediatePrices.sellPrice;
+      else if(item.top5AveragePrices && item.top5AveragePrices.sellPrice != null)
+        p = item.top5AveragePrices.sellPrice;
+      if(p != null && p > 0){ fuelPrices[n] = p; found++; }
     });
-    status.textContent = 'Prices loaded';
+    status.innerHTML = '<span style="color:var(--green)">✓ '+found+' prices loaded</span>';
     setTimeout(function(){status.textContent='';},3000);
-  } catch(e){ status.textContent = 'Error: '+e.message; }
+  } catch(e){
+    status.innerHTML = '<span style="color:var(--red)">✗ '+e.message+'</span>';
+  }
   btn.disabled = false;
   renderFuelTab();
 }
@@ -1851,87 +1901,65 @@ function renderFuelTab(){
     });
   });
 
-  // PI Production Plan
-  var planHtml = '<div style="font-family:var(--fm);font-size:11px;line-height:2;color:var(--text2)">';
+  // PI Production Plan — clean table
   var piPlan = [
-    {
-      product: 'Oxygen',
-      tier: 1,
-      system: 'W-IX39',
-      planet: 'W-IX39 VI (Gas)',
-      jumps: 0,
-      chain: 'Noble Gas → Oxygen',
-      note: 'Dedicate 1 Gas planet entirely to Oxygen — 22 units needed per run, highest PI volume'
-    },
-    {
-      product: 'Coolant',
-      tier: 2,
-      system: 'W-IX39',
-      planet: 'W-IX39 V (Storm) + W-IX39 VII (Gas)',
-      jumps: 0,
-      chain: 'Ionic Solutions (Storm) + Oxidizing Compound (Gas) → Coolant',
-      note: 'Run factory on Storm V. Feed Oxidizing Compound from Gas VII. 9 units/run needed'
-    },
-    {
-      product: 'Mechanical Parts',
-      tier: 2,
-      system: 'K7D-II',
-      planet: 'K7D-II VII (Barren)',
-      jumps: 2,
-      chain: 'Reactive Metals + Precious Metals → Mechanical Parts',
-      note: 'Barren for Reactive Metals; import Precious Metals from Lava. Already active in K7D-II'
-    },
-    {
-      product: 'Enriched Uranium',
-      tier: 2,
-      system: 'K7D-II',
-      planet: 'K7D-II III or VI (Lava)',
-      jumps: 2,
-      chain: 'Precious Metals + Toxic Metals → Enriched Uranium',
-      note: 'Both inputs on Lava — no Plasma needed. K7D-II VI has highest output (955 M.Gas/h)'
-    },
-    {
-      product: 'Robotics',
-      tier: 3,
-      system: 'P4-3TJ / K7D-II',
-      planet: 'P4-3TJ I (Lava) → Consumer Electronics; factory on K7D-II Barren',
-      jumps: 2,
-      chain: 'Toxic Metals → Consumer Electronics (Lava) + Mechanical Parts → Robotics',
-      note: 'P4-3TJ I has high Lava output. Route CE to K7D-II factory planet. Only 1 unit/run'
-    },
+    {product:'Oxygen',          tier:1, planet:'W-IX39 VI',          type:'Gas',        jumps:0, chain:'Noble Gas → Oxygen',                                  note:'22/run — highest volume, dedicate a full Gas planet'},
+    {product:'Coolant',         tier:2, planet:'W-IX39 V + VII',     type:'Storm + Gas',jumps:0, chain:'Ionic Solutions + Oxidizing Compound → Coolant',       note:'Factory on Storm V, import Oxidizing Compound from Gas VII'},
+    {product:'Mechanical Parts',tier:2, planet:'K7D-II VII',          type:'Barren',     jumps:2, chain:'Reactive Metals + Precious Metals → Mech. Parts',     note:'Already active in K7D-II — supplement existing colony'},
+    {product:'Enriched Uranium',tier:2, planet:'K7D-II III or VI',   type:'Lava',       jumps:2, chain:'Precious Metals + Toxic Metals → Enriched Uranium',   note:'Both inputs on Lava — no Plasma needed. K7D-II VI highest output'},
+    {product:'Robotics',        tier:3, planet:'P4-3TJ I + K7D-II', type:'Lava + Barren',jumps:2,chain:'Consumer Electronics + Mech. Parts → Robotics',       note:'Only 1/run — factory planet on K7D-II Barren'},
   ];
-  planHtml += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-bottom:8px">Based on DOTLAN survey of W-IX39, K7D-II (home), C-9RRR, and P4-3TJ within 2 jumps. No Plasma found — Enriched Uranium routed via Lava planets.</div>';
-  var tierColors = ['','var(--t1-c)','var(--t2-c)','var(--t3-c)'];
+  var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
+
+  var planHtml =
+    '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-bottom:10px">'+
+      'Surveyed W-IX39, K7D-II, C-9RRR, P4-3TJ (2 jumps). No Plasma found — Enriched Uranium via Lava.'+
+    '</div>'+
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'+
+    '<thead><tr style="background:var(--bg2);border-bottom:1px solid var(--border2)">'+
+      '<th style="padding:8px 12px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--accent);text-align:left;white-space:nowrap">Material</th>'+
+      '<th style="padding:8px 12px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--accent);text-align:left;white-space:nowrap">Recommended Planet</th>'+
+      '<th style="padding:8px 12px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--accent);text-align:left">PI Chain</th>'+
+      '<th style="padding:8px 12px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--accent);text-align:center;white-space:nowrap">Jumps</th>'+
+      '<th style="padding:8px 12px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--accent);text-align:left">Already Producing</th>'+
+    '</tr></thead><tbody>';
+
   piPlan.forEach(function(row){
     var tc = tierColors[row.tier] || 'var(--text)';
     var existing = charProductMap[row.product] || [];
+    var icon = itemIcon(row.product, 32);
+    var iconHtml = icon ? '<img src="'+icon+'" style="width:22px;height:22px;vertical-align:middle;margin-right:8px;opacity:.85" onerror="this.style.display=\'none\'">' : '';
 
-    planHtml += '<div style="padding:7px 0;border-bottom:1px solid var(--border)">';
-    planHtml += '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">';
-    planHtml += '<span style="font-family:var(--fd);font-size:13px;color:'+tc+';font-weight:600">'+row.product+'</span>';
-    planHtml += '<span style="font-family:var(--fm);font-size:9px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:2px;color:'+tc+'">P'+row.tier+'</span>';
-    if(existing.length){
-      planHtml += '<span style="font-family:var(--fm);font-size:9px;color:var(--green)">✓ Already producing ('+existing.length+' planet'+(existing.length>1?'s':'')+')</span>';
-    }
-    planHtml += '<span style="font-family:var(--fm);font-size:9px;color:var(--text3);margin-left:auto">'+row.jumps+' jump'+(row.jumps!==1?'s':'')+' from W-IX39</span>';
-    planHtml += '</div>';
+    var charHtml = existing.length
+      ? existing.map(function(e){
+          return '<span style="display:inline-block;font-family:var(--fm);font-size:11px;'+
+            'background:rgba(0,221,102,0.08);border:1px solid rgba(0,221,102,0.2);'+
+            'color:var(--green);padding:2px 8px;margin:2px 3px 2px 0;border-radius:2px">'+
+            e.charName+(e.systemName ? ' · '+e.systemName : '')+'</span>';
+        }).join('')
+      : '<span style="color:var(--text3);font-family:var(--fm);font-size:11px">New planet needed</span>';
 
-    // Show existing producers
-    if(existing.length){
-      planHtml += '<div style="margin-bottom:4px">';
-      existing.forEach(function(e){
-        var sys = e.systemName ? ' · '+e.systemName : '';
-        planHtml += '<span style="display:inline-block;font-family:var(--fm);font-size:9px;background:rgba(0,221,102,0.08);border:1px solid rgba(0,221,102,0.2);color:var(--green);padding:1px 7px;margin:1px 3px 1px 0">'+e.charName+' · '+e.planetType+sys+'</span>';
-      });
-      planHtml += '</div>';
-    }
-
-    planHtml += '<div style="color:var(--text3);margin-bottom:2px;font-family:var(--fm);font-size:10px">'+row.planet+'</div>';
-    planHtml += '<div style="font-family:var(--fm);font-size:9px;color:var(--green);margin-bottom:2px">'+row.chain+'</div>';
-    planHtml += '<div style="font-family:var(--fm);font-size:9px;color:var(--text3)">'+row.note+'</div>';
-    planHtml += '</div>';
+    planHtml +=
+      '<tr style="border-bottom:1px solid var(--border)">'+
+      '<td style="padding:9px 12px;white-space:nowrap;vertical-align:middle">'+
+        iconHtml+
+        '<span style="font-family:var(--fd);font-size:13px;font-weight:600;color:'+tc+'">'+row.product+'</span>'+
+        ' <span class="badge '+['','t1','t2','t3','t4'][row.tier]+'">P'+row.tier+'</span>'+
+      '</td>'+
+      '<td style="padding:9px 12px;vertical-align:middle">'+
+        '<div style="font-family:var(--fm);font-size:12px;color:var(--text);white-space:nowrap">'+row.planet+'</div>'+
+        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+row.type+'</div>'+
+      '</td>'+
+      '<td style="padding:9px 12px;vertical-align:middle">'+
+        '<div style="font-family:var(--fm);font-size:12px;color:var(--text2)">'+row.chain+'</div>'+
+        '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:2px">'+row.note+'</div>'+
+      '</td>'+
+      '<td style="padding:9px 12px;text-align:center;vertical-align:middle;font-family:var(--mono);font-size:14px;color:'+(row.jumps===0?'var(--green)':'var(--text2)')+'">'+row.jumps+'</td>'+
+      '<td style="padding:9px 12px;vertical-align:middle">'+charHtml+'</td>'+
+      '</tr>';
   });
-  planHtml += '</div>';
+
+  planHtml += '</tbody></table></div>';
   document.getElementById('fuelPiPlan').innerHTML = planHtml;
 
   // Output blocks
