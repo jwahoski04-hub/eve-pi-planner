@@ -500,36 +500,36 @@ var SCH = {
   "Wetware Mainframe":          {tier:4,inputs:{"Supercomputers":6,"Biotech Research Reports":6,"Cryoprotectant Solution":6},perRun:1}
 };
 
-// EVE type IDs for item icons — https://images.evetech.net/types/{id}/icon?size=64
+// EVE type IDs for item icons — verified from EVE Ref and Fuzzwork PI page
 var PI_TYPE_IDS = {
-  // P1
+  // P1 — verified from EVE Ref
   "Bacteria":2393,"Biofuels":2396,"Biomass":3779,"Chiral Structures":2401,
   "Electrolytes":2390,"Industrial Fibers":2397,"Oxidizing Compound":2392,
   "Oxygen":3683,"Plasmoids":2389,"Precious Metals":2399,"Proteins":2395,
-  "Reactive Metals":2398,"Silicon":9828,"Toxic Metals":2400,"Water":2267,
-  // P2
+  "Reactive Metals":2398,"Silicon":9828,"Toxic Metals":2400,"Water":3645,
+  // P2 — verified from Fuzzwork PI anchor IDs and EVE Ref
   "Biocells":2463,"Construction Blocks":3828,"Consumer Electronics":9836,
   "Coolant":9832,"Enriched Uranium":44,"Fertilizer":3825,
-  "Genetically Enhanced Livestock":3812,"Livestock":3813,
+  "Genetically Enhanced Livestock":15317,"Livestock":3725,
   "Mechanical Parts":3689,"Microfiber Shielding":3832,"Miniature Electronics":9838,
-  "Nanites":9842,"Oxides":2868,"Polyaramids":3835,"Polytextiles":3836,
-  "Rocket Fuel":9850,"Silicate Glass":9849,"Superconductors":9840,
-  "Supertensile Plastics":3829,"Synthetic Oil":9830,"Test Cultures":3826,
+  "Nanites":9842,"Oxides":2317,"Polyaramids":2321,"Polytextiles":3836,
+  "Rocket Fuel":9830,"Silicate Glass":3697,"Superconductors":9840,
+  "Supertensile Plastics":2312,"Synthetic Oil":3691,"Test Cultures":2319,
   "Transmitter":9834,"Viral Agent":2877,"Water-Cooled CPU":9846,
-  // P3
-  "Biotech Research Reports":2358,"Camera Drones":2345,"Condensates":17392,
-  "Cryoprotectant Solution":2367,"Data Chips":2344,"Gel-Matrix Biopaste":2348,
-  "Guidance Systems":17393,"Hazmat Detection Systems":2366,
+  // P3 — verified from EVE Ref market-groups/1336
+  "Biotech Research Reports":2358,"Camera Drones":2345,"Condensates":2344,
+  "Cryoprotectant Solution":2367,"Data Chips":17392,"Gel-Matrix Biopaste":2348,
+  "Guidance Systems":9834,"Hazmat Detection Systems":2366,
   "Hermetic Membranes":2361,"High-Tech Transmitters":17898,
   "Industrial Explosives":2360,"Neocoms":2354,"Nuclear Reactors":2352,
-  "Planetary Vehicles":2870,"Robotics":9848,"Smartfab Units":2351,
-  "Supercomputers":2349,"Synthetic Synapses":17136,
-  "Transcranial Microcontrollers":2346,"Ukomi Superconductors":28974,"Vaccines":2869,
-  // P4
-  "Broadcast Node":2867,"Integrity Response Drones":2876,
-  "Nano-Factory":2871,"Organic Mortar Applicators":2875,
-  "Recursive Computing Module":2872,"Self-Harmonizing Power Core":2873,
-  "Sterile Conduits":2874,"Wetware Mainframe":2875
+  "Planetary Vehicles":9846,"Robotics":9848,"Smartfab Units":2351,
+  "Supercomputers":2349,"Synthetic Synapses":2346,
+  "Transcranial Microcontrollers":12836,"Ukomi Superconductors":17136,"Vaccines":28974,
+  // P4 — verified from EVE Ref market-groups/1337
+  "Broadcast Node":2867,"Integrity Response Drones":2868,
+  "Nano-Factory":2869,"Organic Mortar Applicators":2870,
+  "Recursive Computing Module":2871,"Self-Harmonizing Power Core":2872,
+  "Sterile Conduits":2875,"Wetware Mainframe":2876
 };
 function itemIcon(name,size){
   var id=PI_TYPE_IDS[name];
@@ -1232,22 +1232,66 @@ var characters = lsGet('pi_characters') || [];
 var LP_CHAR_IDS = new Set([2544,2543,2552,2555,2542,2556,2557,2256]); // all launchpads
 var SF_CHAR_IDS = new Set([2541,2536,2257,2558,2535,2560,2561,2562]); // all storage facilities
 var PI_VOLS = {
-  // P1 (0.38 m³)
-  2267:0.38,2268:0.38,2269:0.38,2270:0.38,2272:0.38,2073:0.38,3779:0.38,
-  2309:0.38,2310:0.38,2311:0.38,2312:0.38,2317:0.38,2319:0.38,2321:0.38,
-  2327:0.38,2329:0.38,2346:0.38,2349:0.38,2351:0.38,2353:0.38,2354:0.38,
-  2360:0.38,2361:0.38,2362:0.38,9828:0.38,2287:0.38,2288:0.38,
-  2395:0.38,2396:0.38,2397:0.38,2398:0.38,2399:0.38,2400:0.38,2401:0.38,
-  2389:0.38,2390:0.38,2392:0.38,2393:0.38,3683:0.38,3779:0.38,
-  // P2 (1.5 m³)
-  2463:1.5,2464:1.5,2465:1.5,2466:1.5,2667:1.5,2868:1.5,
-  2876:1.5,2877:1.5,3689:1.5,3691:1.5,3693:1.5,3695:1.5,
-  3697:1.5,3699:1.5,3701:1.5,3703:1.5,
-  // P3 (6 m³)
-  2344:6,2345:6,17136:6,17392:6,17393:6,17898:6,28974:6,
-  2867:6,2869:6,2870:6,2871:6,2872:6,2875:6,
-  // P4 (100 m³)
-  2857:100,2858:100,2859:100,2860:100,2861:100,2862:100,2863:100,2864:100
+  // P1 (0.38 m³) — verified IDs
+  2389:0.38,2390:0.38,2392:0.38,2393:0.38,2395:0.38,2396:0.38,
+  2397:0.38,2398:0.38,2399:0.38,2400:0.38,2401:0.38,
+  3683:0.38,3779:0.38,9828:0.38,3645:0.38,
+  // P2 (1.5 m³) — verified IDs from Fuzzwork
+  2463:1.5,  // Biocells
+  3828:1.5,  // Construction Blocks
+  9836:1.5,  // Consumer Electronics
+  9832:1.5,  // Coolant
+  44:1.5,    // Enriched Uranium
+  3825:1.5,  // Fertilizer
+  15317:1.5, // Genetically Enhanced Livestock
+  3725:1.5,  // Livestock
+  3689:1.5,  // Mechanical Parts
+  3832:1.5,  // Microfiber Shielding
+  9838:1.5,  // Miniature Electronics (also Superconductors anchor — different)
+  9842:1.5,  // Nanites
+  2317:1.5,  // Oxides
+  2321:1.5,  // Polyaramids
+  3836:1.5,  // Polytextiles
+  9830:1.5,  // Rocket Fuel
+  3697:1.5,  // Silicate Glass
+  9840:1.5,  // Superconductors
+  2312:1.5,  // Supertensile Plastics
+  3691:1.5,  // Synthetic Oil
+  2319:1.5,  // Test Cultures
+  9834:1.5,  // Transmitter
+  2877:1.5,  // Viral Agent
+  9846:1.5,  // Water-Cooled CPU
+  // P3 (6 m³) — verified from EVE Ref market-groups/1336
+  2344:6,   // Condensates
+  2345:6,   // Camera Drones
+  2346:6,   // Synthetic Synapses
+  2348:6,   // Gel-Matrix Biopaste
+  2349:6,   // Supercomputers
+  2351:6,   // Smartfab Units
+  2352:6,   // Nuclear Reactors
+  2354:6,   // Neocoms
+  2358:6,   // Biotech Research Reports
+  2360:6,   // Industrial Explosives
+  2361:6,   // Hermetic Membranes
+  2366:6,   // Hazmat Detection Systems
+  2367:6,   // Cryoprotectant Solution
+  9834:6,   // Guidance Systems
+  9846:6,   // Planetary Vehicles
+  9848:6,   // Robotics
+  12836:6,  // Transcranial Microcontrollers
+  17136:6,  // Ukomi Superconductors
+  17392:6,  // Data Chips
+  17898:6,  // High-Tech Transmitters
+  28974:6,  // Vaccines
+  // P4 (100 m³) — verified from EVE Ref market-groups/1337
+  2867:100, // Broadcast Node
+  2868:100, // Integrity Response Drones
+  2869:100, // Nano-Factory
+  2870:100, // Organic Mortar Applicators
+  2871:100, // Recursive Computing Module
+  2872:100, // Self-Harmonizing Power Core
+  2875:100, // Sterile Conduits
+  2876:100  // Wetware Mainframe
 };
 // Clear old client ID if it's the previous app
 (function(){ var old = lsGet('pi_esi_client_id'); if(old === '44c5fa5da4504b658a0bde348b9637d2') lsSet('pi_esi_client_id', null); })();
