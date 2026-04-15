@@ -95,7 +95,7 @@ tr:hover td{background:rgba(0,170,255,.03)}
 .ineu{color:var(--text2);font-family:var(--mono)}
 .ineg{color:var(--red);font-family:var(--mono)}
 /* Sell point analysis */
-.sell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:18px}
+.sell-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
 .gap-info-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-size:11px;cursor:pointer;flex-shrink:0;position:relative}
 .gap-info-btn:hover{border-color:var(--accent);color:var(--accent)}
 #gapHideToggle[data-on="1"]{background:var(--accent);border-color:var(--accent)}
@@ -290,7 +290,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 
 <!-- MULTI TAB -->
 <div id="tab-multi" class="tab">
-  <div style="display:grid;grid-template-columns:1fr 660px;gap:16px;align-items:start">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;margin-left:auto">
+      <input type="checkbox" id="showAnalysisPanels" checked onchange="document.getElementById('analysisPanels').style.display=this.checked?'':'none';document.getElementById('tab-multi').querySelector('.tab-multi-grid').style.gridTemplateColumns=this.checked?'1fr 660px':'1fr';"
+        style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
+      <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Show Gap & Max Production</span>
+    </label>
+  </div>
+  <div class="tab-multi-grid" style="display:grid;grid-template-columns:1fr 660px;gap:16px;align-items:start">
 
     <!-- Left: existing multi-product content -->
     <div>
@@ -308,13 +315,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
         <div class="mgrid" id="multiMetrics"></div>
         <div class="slabel">Profitability Score & Sell Point Analysis</div>
         <div id="multiSellAnalysis"></div>
-        <div class="slabel">All Intermediates Required</div>
-        <div class="twrap"><table><thead><tr><th>Schematic</th><th>Tier</th><th>Inputs Required</th><th class="r">Units Needed</th><th class="r">Jita Sell (total)</th></tr></thead><tbody id="multiIntBody"></tbody></table></div>
+        <div class="slabel" id="multiIntHdr" onclick="var b=document.getElementById('multiIntBody').closest('.twrap');var open=b.style.display!=='none';b.style.display=open?'none':'';this.querySelector('.int-toggle').textContent=open?'▼ show':'▲ hide';" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between">
+          <span>All Intermediates Required</span>
+          <span class="int-toggle" style="font-family:var(--fm);font-size:11px;color:var(--text3);font-weight:400">▼ show</span>
+        </div>
+        <div class="twrap" style="display:none"><table><thead><tr><th>Schematic</th><th>Tier</th><th>Inputs Required</th><th class="r">Units Needed</th><th class="r">Jita Sell (total)</th></tr></thead><tbody id="multiIntBody"></tbody></table></div>
       </div>
     </div>
 
     <!-- Right: two panels side by side -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;position:sticky;top:12px;align-items:start">
+    <div id="analysisPanels" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;position:sticky;top:12px;align-items:start">
 
       <!-- Gap Analysis panel -->
       <div id="gapPanel">
@@ -375,8 +385,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 
     </div><!-- /right panels -->
 
-  </div>
-</div>
+  </div><!-- /tab-multi-grid -->
+</div><!-- /tab-multi -->
 
 <!-- COLONY TAB — PLANET EXTRACTION TIMERS -->
 <div id="tab-colony" class="tab">
