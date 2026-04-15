@@ -96,6 +96,9 @@ tr:hover td{background:rgba(0,170,255,.03)}
 .ineg{color:var(--red);font-family:var(--mono)}
 /* Sell point analysis */
 .sell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:18px}
+.gap-info-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-size:11px;cursor:pointer;flex-shrink:0;position:relative}
+.gap-info-btn:hover{border-color:var(--accent);color:var(--accent)}
+.gap-info-btn:hover+#gapRatesTooltip,.gap-info-btn:focus+#gapRatesTooltip{display:block!important}
 .sell-card{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;position:relative}
 .sell-card.best{border-color:var(--green);background:rgba(0,221,102,0.04)}
 .sell-card.best::after{content:'BEST';position:absolute;top:8px;right:10px;font-family:var(--fm);font-size:11px;color:var(--green);letter-spacing:1px}
@@ -261,7 +264,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <div class="fstatus" id="fetchStatus"></div>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
       <span style="font-family:var(--fm);font-size:11px;color:var(--text2);white-space:nowrap">POCO Tax %</span>
-      <input type="number" id="taxRate" style="width:44px;max-width:44px;min-width:44px;padding:5px 4px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:12px;text-align:center;-moz-appearance:textfield" value="10" min="0" max="100" step="0.1" title="POCO export tax rate">
+      <input type="number" id="taxRate" style="width:44px;max-width:44px;min-width:44px;padding:5px 4px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:12px;text-align:center;-moz-appearance:textfield" value="1" min="0" max="100" step="0.1" title="POCO export tax rate">
     </div>
   </div>
   <div id="chainGrid"></div>
@@ -292,7 +295,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <div>
       <div class="sbar"><input type="text" id="multiSearch" placeholder="Search to add products to your plan..."></div>
       <div id="multiGrid"></div>
-      <div class="slabel">Active Plan</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div class="slabel" style="margin-bottom:0">Active Plan</div>
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Output qty</span>
+        <input type="number" id="multiOutQty" value="1" min="1" style="width:56px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;text-align:center">
+        <span style="font-family:var(--fm);font-size:10px;color:var(--text3)">units of each product</span>
+      </div>
       <div class="pillrow" id="multiPills"><span class="pill-empty">No products selected — search above to add</span></div>
       <div id="multiDetail" style="display:none">
         <div class="divider"></div>
@@ -307,11 +315,30 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <!-- Right: Gap Analysis panel -->
     <div id="gapPanel" style="position:sticky;top:12px">
       <div style="background:var(--bg1);border:1px solid var(--border);padding:0">
-        <div style="background:var(--bg2);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
-          <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase">Gap Analysis</span>
-          <span style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-left:auto">per 24h</span>
+        <div style="background:var(--bg2);padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase">Gap Analysis</span>
+            <!-- Rates tooltip -->
+            <span class="gap-info-btn" title="">&#9432;</span>
+            <div id="gapRatesTooltip" style="display:none;position:absolute;z-index:99;background:var(--bg2);border:1px solid var(--border2);padding:10px 12px;font-family:var(--fm);font-size:11px;color:var(--text2);min-width:220px;line-height:1.8;box-shadow:0 4px 16px rgba(0,0,0,.4)">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px">EVE Default Production / 24h</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 12px">
+                <span style="color:var(--text3)">P0 Raw</span><span>Extractor-dependent (varies)</span>
+                <span style="color:var(--t1-c)">P1</span><span>960 units &nbsp;<span style="color:var(--text3)">(20/run × 48 runs)</span></span>
+                <span style="color:var(--t2-c)">P2</span><span>120 units &nbsp;<span style="color:var(--text3)">(5/run × 24 runs)</span></span>
+                <span style="color:var(--t3-c)">P3</span><span>72 units &nbsp;<span style="color:var(--text3)">(3/run × 24 runs)</span></span>
+                <span style="color:var(--t4-c)">P4</span><span>24 units &nbsp;<span style="color:var(--text3)">(1/run × 24 runs)</span></span>
+              </div>
+              <div style="color:var(--text3);font-size:10px;margin-top:6px">Per factory pin/day. Multi-pin planets multiply accordingly.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Target qty/day</span>
+            <input type="number" id="gapTargetQty" value="1" min="1" style="width:56px;padding:4px 6px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;text-align:center">
+            <span style="font-family:var(--fm);font-size:10px;color:var(--text3)">units of each selected</span>
+          </div>
         </div>
-        <div id="gapContent" style="padding:12px 14px">
+        <div id="gapContent" style="padding:12px 14px;max-height:calc(100vh - 200px);overflow-y:auto">
           <div style="font-family:var(--fm);font-size:11px;color:var(--text3);text-align:center;padding:20px 0">Select products to see production gaps</div>
         </div>
       </div>
@@ -710,6 +737,8 @@ document.getElementById('chainGrid').addEventListener('click',function(e){
 });
 document.getElementById('chainQty').addEventListener('input',function(){if(chainSel)renderChainDetail();});
 document.getElementById('taxRate').addEventListener('input',function(){if(chainSel)renderChainDetail();if(multiSel.length)renderMultiDetail();});
+document.getElementById('multiOutQty').addEventListener('input',function(){if(multiSel.length)renderMultiDetail();});
+document.getElementById('gapTargetQty').addEventListener('input',function(){renderGapAnalysis();});
 
 // ── Character producer map ───────────────────────────────
 // Returns { productName: [{charId, charName}] }
@@ -914,54 +943,57 @@ function renderMultiDetail(){
   var allPlanets=new Set();
   Object.keys(allRaws).forEach(function(m){(RAW[m]||[]).forEach(function(p){allPlanets.add(p);});});
 
-  // Combined revenue (1 unit of each final product)
+  // Combined revenue scaled by output qty
+  var outQty = parseInt(document.getElementById('multiOutQty').value)||1;
   var totalRev=0, hasPrices=false;
-  multiSel.forEach(function(n){var p=getPrice(n);if(p!=null){totalRev+=p;hasPrices=true;}});
+  multiSel.forEach(function(n){var p=getPrice(n);if(p!=null){totalRev+=p*outQty;hasPrices=true;}});
 
-  // Per-product ISK/P1 score
+  // Per-product ISK/P1 score (per unit, for comparison)
   var scoreRows = multiSel.map(function(n){
     var r={},it={};
     resolve(n,1,r,it);
     var totalP1Units = Object.values(r).reduce(function(s,v){return s+v;},0);
     var price = getPrice(n);
     var tier = SCH[n]?SCH[n].tier:1;
-    var tax = exportTax(tier, 1);
-    var net = price!=null ? price - tax : null;
-    var score = (net!=null && totalP1Units>0) ? net/totalP1Units : null;
-    return {name:n, tier:tier, price:price, net:net, tax:tax, totalP1Units:totalP1Units, score:score};
+    var tax = exportTax(tier, outQty);
+    var net = price!=null ? price*outQty - tax : null;
+    var score = (net!=null && totalP1Units>0) ? net/(totalP1Units*outQty) : null;
+    return {name:n, tier:tier, price:price, net:net, tax:tax, totalP1Units:totalP1Units, score:score, outQty:outQty};
   });
   var bestScore = scoreRows.reduce(function(best,r){return (r.score!=null&&(best==null||r.score>best))?r.score:best;},null);
 
   var scoreHtml = '<div style="overflow-x:auto;margin-bottom:18px"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
     '<thead><tr>'+
     '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:left;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Product</th>'+
-    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Jita Sell</th>'+
+    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Qty</th>'+
+    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Unit Price</th>'+
+    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Total Revenue</th>'+
     '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Export Tax</th>'+
     '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">Net</th>'+
-    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">P1 Units Used</th>'+
-    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">ISK / P1 Unit ★</th>'+
+    '<th style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:1.5px;text-align:right;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border2)">ISK / P1 ★</th>'+
     '</tr></thead><tbody>'+
     scoreRows.sort(function(a,b){return (b.score||0)-(a.score||0);}).map(function(r){
       var isBest = r.score!=null && r.score===bestScore;
-      var scoreStr = r.score!=null ? fmtISK(r.score) : '—';
+      var grossRev = r.price!=null ? r.price*r.outQty : null;
       return '<tr style="'+(isBest?'background:rgba(0,221,102,0.05)':'')+'">' +
         '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--fd);color:#ddeeff;font-size:12px">'+
           r.name+(isBest?' <span style="font-family:var(--fm);font-size:9px;color:var(--green);letter-spacing:1px">BEST</span>':'')+
         '</td>'+
-        '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--green)">'+fmtISK(r.price)+'</td>'+
+        '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);color:var(--text2)">'+r.outQty+'</td>'+
+        '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--text2)">'+fmtISK(r.price)+'</td>'+
+        '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--green)">'+fmtISK(grossRev)+'</td>'+
         '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--red)">'+fmtISK(r.tax)+'</td>'+
         '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--green)">'+fmtISK(r.net)+'</td>'+
-        '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fm);color:var(--text2)">'+r.totalP1Units.toLocaleString()+'</td>'+
         '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--fd);font-size:14px;'+(isBest?'color:var(--green)':'color:var(--text)')+'">'+(r.score!=null?fmtISK(r.score):'—')+'</td>'+
       '</tr>';
     }).join('')+
     '</tbody></table>'+
-    '<div style="font-family:var(--fm);font-size:9px;color:var(--text3);margin-top:6px">★ ISK per P1 unit consumed — higher is better. Measures how much value you extract per unit of planet output regardless of chain length.</div>'+
+    '<div style="font-family:var(--fm);font-size:9px;color:var(--text3);margin-top:6px">★ ISK per P1 unit consumed — higher is better. Measures value extracted per unit of planet output regardless of chain length.</div>'+
     '</div>';
 
   document.getElementById('multiMetrics').innerHTML=
     '<div class="metric"><div class="m-lbl">Products</div><div class="m-val">'+multiSel.length+'</div><div class="m-sub">In this plan</div></div>'+
-    '<div class="metric"><div class="m-lbl">Combined Output</div><div class="m-val '+(hasPrices?'ipos':'ineu')+'">'+(hasPrices?fmtISK(totalRev):'—')+'</div><div class="m-sub">1 unit each @ Jita</div></div>'+
+    '<div class="metric"><div class="m-lbl">Total Revenue</div><div class="m-val '+(hasPrices?'ipos':'ineu')+'">'+(hasPrices?fmtISK(totalRev):'—')+'</div><div class="m-sub">'+outQty+' unit'+(outQty!==1?'s':'')+' each @ Jita</div></div>'+
     '<div class="metric"><div class="m-lbl">Best ISK/P1</div><div class="m-val '+(bestScore!=null?'ipos':'ineu')+'">'+(bestScore!=null?fmtISK(bestScore):'—')+'</div><div class="m-sub">Top product score</div></div>';
 
   // Score table inserted before sell analysis
@@ -1070,15 +1102,15 @@ function renderGapAnalysis(){
   }
 
   // Step 1: For each selected final product, calculate all inputs needed per 24h
-  // at standard EVE production rates. GAP_RATES[tier] = units/day from one factory line.
+  // Target qty/day is set by the user in the gap panel header input.
   // We calculate how many units/24h of every intermediate are required to sustain
-  // continuous production of GAP_RATES[finalTier] units/day of the final product.
+  // production of targetQty units/day of each selected final product.
+  var targetQty = parseInt(document.getElementById('gapTargetQty').value)||1;
   var needed = {}; // name -> units/24h needed
 
   multiSel.forEach(function(finalProd){
     var s = SCH[finalProd];
     if(!s) return;
-    var finalUnitsPerDay = GAP_RATES[s.tier]; // e.g. P4 = 24/day, P3 = 72/day
 
     // Recursive: given that we need `unitsPerDay` of `name`, what do we need of its inputs?
     function calcNeeds(name, unitsPerDay){
@@ -1093,7 +1125,7 @@ function renderGapAnalysis(){
       });
     }
 
-    calcNeeds(finalProd, finalUnitsPerDay);
+    calcNeeds(finalProd, targetQty);
   });
 
   // Remove raw P0 resources (not in SCH)
@@ -1153,6 +1185,12 @@ function renderGapAnalysis(){
       var icon = itemIcon(name, 32);
       var iconHtml = icon ? '<img src="'+icon+'" style="width:18px;height:18px;flex-shrink:0;opacity:.8;vertical-align:middle" onerror="this.style.display=\'none\'">' : '';
 
+      // Factory count: how many factory pins needed to cover `need` at standard rate
+      var ratePerPin = GAP_RATES[tier];
+      var pinsNeeded = need > 0 ? Math.ceil(need / ratePerPin) : 0;
+      var pinsHave   = have > 0 ? Math.floor(have / ratePerPin) : 0;
+      var pinsGap    = Math.max(0, pinsNeeded - pinsHave);
+
       var statusColor, statusSymbol;
       if(!hasCharData){
         statusColor = 'var(--text3)'; statusSymbol = '?';
@@ -1168,29 +1206,41 @@ function renderGapAnalysis(){
       var pct = need > 0 ? Math.min(100, Math.round(have/need*100)) : 100;
       var barColor = gap<=0 ? 'var(--green)' : (have>0 ? 'var(--amber)' : 'var(--red)');
 
-      html += '<div style="margin-bottom:8px">';
+      var needStr  = Number.isInteger(need)  ? need.toLocaleString()  : need.toFixed(1);
+      var haveStr  = Number.isInteger(have)  ? have.toLocaleString()  : have.toFixed(1);
+      var gapStr   = Number.isInteger(Math.abs(gap)) ? Math.abs(gap).toLocaleString() : Math.abs(gap).toFixed(1);
+
+      html += '<div style="margin-bottom:10px">';
       html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">';
       html += iconHtml;
       html += '<span style="font-family:var(--fm);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span>';
       html += '<span style="font-family:var(--mono);font-size:11px;color:'+statusColor+';flex-shrink:0">'+statusSymbol+'</span>';
       html += '</div>';
       // Progress bar
-      html += '<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:2px">';
+      html += '<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:3px">';
       html += '<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:2px;transition:width .3s"></div>';
       html += '</div>';
-      // Numbers
-      html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px">';
+      // Units/day line
+      html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;margin-bottom:1px">';
       if(!hasCharData){
-        html += '<span style="color:var(--text3)">Need '+need.toLocaleString()+'/day</span>';
-        html += '<span style="color:var(--text3)">No data</span>';
+        html += '<span style="color:var(--text3)">Need '+needStr+'/day</span>';
+        html += '<span style="color:var(--text3)">'+pinsNeeded+' pin'+(pinsNeeded!==1?'s':'')+' needed</span>';
       } else if(gap <= 0){
-        html += '<span style="color:var(--text3)">Need '+need.toLocaleString()+'/day</span>';
-        html += '<span style="color:var(--green)">+'+Math.abs(gap).toLocaleString()+' surplus</span>';
+        html += '<span style="color:var(--text3)">'+needStr+'/day</span>';
+        html += '<span style="color:var(--green)">+'+gapStr+' surplus</span>';
       } else {
-        html += '<span style="color:var(--text3)">'+have.toLocaleString()+' / '+need.toLocaleString()+' /day</span>';
-        html += '<span style="color:'+barColor+'">▲ '+gap.toLocaleString()+' short</span>';
+        html += '<span style="color:var(--text3)">'+haveStr+' / '+needStr+' /day</span>';
+        html += '<span style="color:'+barColor+'">▲ '+gapStr+' short</span>';
       }
       html += '</div>';
+      // Factory pins line
+      if(hasCharData){
+        html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3)">';
+        html += '<span>'+pinsHave+' / '+pinsNeeded+' pin'+(pinsNeeded!==1?'s':'')+' @ '+ratePerPin+'/day ea</span>';
+        if(pinsGap > 0) html += '<span style="color:'+barColor+'">+'+pinsGap+' needed</span>';
+        else html += '<span style="color:var(--green)">covered</span>';
+        html += '</div>';
+      }
       html += '</div>';
     });
   });
