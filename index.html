@@ -1197,10 +1197,12 @@ function renderGapAnalysis(){
 
   var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
   var tierLabels = {1:'P1',2:'P2',3:'P3',4:'P4'};
+  var tierBg     = {1:'rgba(0,102,204,0.07)',2:'rgba(0,180,80,0.06)',3:'rgba(255,150,0,0.06)',4:'rgba(180,60,220,0.07)'};
+  var tierHdrBg  = {1:'rgba(0,102,204,0.14)',2:'rgba(0,180,80,0.12)',3:'rgba(255,150,0,0.11)',4:'rgba(180,60,220,0.13)'};
 
   [4,3,2,1].forEach(function(tier){
     if(!tierGroups[tier]) return;
-    html += '<div style="font-family:var(--fm);font-size:10px;font-weight:600;color:'+tierColors[tier]+';letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">'+tierLabels[tier]+'</div>';
+    html += '<div style="font-family:var(--fm);font-size:10px;font-weight:600;color:'+tierColors[tier]+';letter-spacing:1px;text-transform:uppercase;margin:10px 0 0;padding:4px 6px;background:'+tierHdrBg[tier]+'">'+tierLabels[tier]+'</div>';
 
     tierGroups[tier].forEach(function(name){
       var need = needed[name] || 0;
@@ -1235,7 +1237,7 @@ function renderGapAnalysis(){
       var haveStr  = Number.isInteger(have)  ? have.toLocaleString()  : have.toFixed(1);
       var gapStr   = Number.isInteger(Math.abs(gap)) ? Math.abs(gap).toLocaleString() : Math.abs(gap).toFixed(1);
 
-      html += '<div style="margin-bottom:10px">';
+      html += '<div style="margin-bottom:2px;padding:6px 6px 4px;background:'+tierBg[tier]+'">';
       html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">';
       html += iconHtml;
       html += '<span style="font-family:var(--fm);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span>';
@@ -1376,6 +1378,8 @@ function renderMaxProduction(){
 
   var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
   var tierLabels = {1:'P1',2:'P2',3:'P3',4:'P4'};
+  var tierBg     = {1:'rgba(0,102,204,0.07)',2:'rgba(0,180,80,0.06)',3:'rgba(255,150,0,0.06)',4:'rgba(180,60,220,0.07)'};
+  var tierHdrBg  = {1:'rgba(0,102,204,0.14)',2:'rgba(0,180,80,0.12)',3:'rgba(255,150,0,0.11)',4:'rgba(180,60,220,0.13)'};
   var facilityLabel = function(t){ return t===1?'Basic Fac.':t===4?'Hi-Tech Plant':'Adv. Fac.'; };
 
   // Group by tier
@@ -1411,7 +1415,7 @@ function renderMaxProduction(){
     var items = grp.selected.concat(grp.intermediates);
     if(!items.length) return;
 
-    html += '<div style="font-family:var(--fm);font-size:10px;font-weight:600;color:'+tierColors[tier]+';letter-spacing:1px;text-transform:uppercase;margin:10px 0 5px">'+tierLabels[tier]+'</div>';
+    html += '<div style="font-family:var(--fm);font-size:10px;font-weight:600;color:'+tierColors[tier]+';letter-spacing:1px;text-transform:uppercase;margin:10px 0 0;padding:4px 6px;background:'+tierHdrBg[tier]+'">'+tierLabels[tier]+'</div>';
 
     items.forEach(function(name){
       var isFinal = multiSel.indexOf(name) >= 0;
@@ -1428,7 +1432,7 @@ function renderMaxProduction(){
       var valColor = noFactory ? 'var(--red)' : isBinding ? 'var(--amber)' : 'var(--green)';
       var nameColor = isFinal ? 'var(--text)' : 'var(--text2)';
 
-      html += '<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--border)">';
+      html += '<div style="display:flex;align-items:center;gap:5px;padding:4px 6px;border-bottom:1px solid var(--border);background:'+tierBg[tier]+'">';
       html += iconHtml;
       html += '<span style="font-family:var(--fm);font-size:11px;color:'+nameColor+';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
       html += (isFinal?'<b>':'')+name+(isFinal?'</b>':'');
