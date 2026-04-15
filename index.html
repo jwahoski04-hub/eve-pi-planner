@@ -286,17 +286,37 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 
 <!-- MULTI TAB -->
 <div id="tab-multi" class="tab">
-  <div class="sbar"><input type="text" id="multiSearch" placeholder="Search to add products to your plan..."></div>
-  <div id="multiGrid"></div>
-  <div class="slabel">Active Plan</div>
-  <div class="pillrow" id="multiPills"><span class="pill-empty">No products selected — search above to add</span></div>
-  <div id="multiDetail" style="display:none">
-    <div class="divider"></div>
-    <div class="mgrid" id="multiMetrics"></div>
-    <div class="slabel">Profitability Score & Sell Point Analysis</div>
-    <div id="multiSellAnalysis"></div>
-    <div class="slabel">All Intermediates Required</div>
-    <div class="twrap"><table><thead><tr><th>Schematic</th><th>Tier</th><th>Inputs Required</th><th class="r">Units Needed</th><th class="r">Jita Sell (total)</th></tr></thead><tbody id="multiIntBody"></tbody></table></div>
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start">
+
+    <!-- Left: existing multi-product content -->
+    <div>
+      <div class="sbar"><input type="text" id="multiSearch" placeholder="Search to add products to your plan..."></div>
+      <div id="multiGrid"></div>
+      <div class="slabel">Active Plan</div>
+      <div class="pillrow" id="multiPills"><span class="pill-empty">No products selected — search above to add</span></div>
+      <div id="multiDetail" style="display:none">
+        <div class="divider"></div>
+        <div class="mgrid" id="multiMetrics"></div>
+        <div class="slabel">Profitability Score & Sell Point Analysis</div>
+        <div id="multiSellAnalysis"></div>
+        <div class="slabel">All Intermediates Required</div>
+        <div class="twrap"><table><thead><tr><th>Schematic</th><th>Tier</th><th>Inputs Required</th><th class="r">Units Needed</th><th class="r">Jita Sell (total)</th></tr></thead><tbody id="multiIntBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Right: Gap Analysis panel -->
+    <div id="gapPanel" style="position:sticky;top:12px">
+      <div style="background:var(--bg1);border:1px solid var(--border);padding:0">
+        <div style="background:var(--bg2);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase">Gap Analysis</span>
+          <span style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-left:auto">per 24h</span>
+        </div>
+        <div id="gapContent" style="padding:12px 14px">
+          <div style="font-family:var(--fm);font-size:11px;color:var(--text3);text-align:center;padding:20px 0">Select products to see production gaps</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -864,7 +884,7 @@ document.getElementById('multiGrid').addEventListener('click',function(e){
   if(!SCH[card.dataset.name])return;
   var n=card.dataset.name,idx=multiSel.indexOf(n);
   if(idx>=0)multiSel.splice(idx,1);else multiSel.push(n);
-  renderMultiGrid(getMultiFiltered());renderMultiPills();renderMultiDetail();
+  renderMultiGrid(getMultiFiltered());renderMultiPills();renderMultiDetail();renderGapAnalysis();
 });
 function renderMultiPills(){
   var el=document.getElementById('multiPills');
@@ -874,7 +894,7 @@ function renderMultiPills(){
 document.getElementById('multiPills').addEventListener('click',function(e){
   var btn=e.target.closest('[data-action="rmpill"]');if(!btn)return;
   multiSel.splice(parseInt(btn.dataset.idx),1);
-  renderMultiPills();renderMultiGrid(getMultiFiltered());renderMultiDetail();
+  renderMultiPills();renderMultiGrid(getMultiFiltered());renderMultiDetail();renderGapAnalysis();
 });
 function renderMultiDetail(){
   var det=document.getElementById('multiDetail');
@@ -1023,6 +1043,159 @@ function renderMultiDetail(){
       '<td class="r">'+ph+'</td>'+
     '</tr>';
   }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+//  GAP ANALYSIS PANEL
+// ════════════════════════════════════════════════════════
+// Standard EVE production rates per Advanced Industry Facility per hour:
+//   P1: 20 units/30min = 40/hr    P2: 5/hr    P3: 3/hr    P4: 1/hr
+// We express everything as units per 24h for readability.
+// One planet assumed to have: 2 extractors feeding 1 AIF (P2/P3) or 1 HTPP (P4)
+// Standard factory planet rates per 24h:
+var GAP_RATES = { 1: 960, 2: 120, 3: 72, 4: 24 };
+// The 6 target characters for gap analysis
+var GAP_CHARS = [
+  'Varacruz','Primary Industry','Secondary Industry',
+  'Sequoiya Asshammer','Primary Planetary Interactions','Brak Saissore'
+];
+
+function renderGapAnalysis(){
+  var el = document.getElementById('gapContent');
+  if(!el) return;
+
+  if(!multiSel.length){
+    el.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--text3);text-align:center;padding:20px 0">Select products to see production gaps</div>';
+    return;
+  }
+
+  // Step 1: For each selected final product, calculate all inputs needed per 24h
+  // at standard EVE production rates. GAP_RATES[tier] = units/day from one factory line.
+  // We calculate how many units/24h of every intermediate are required to sustain
+  // continuous production of GAP_RATES[finalTier] units/day of the final product.
+  var needed = {}; // name -> units/24h needed
+
+  multiSel.forEach(function(finalProd){
+    var s = SCH[finalProd];
+    if(!s) return;
+    var finalUnitsPerDay = GAP_RATES[s.tier]; // e.g. P4 = 24/day, P3 = 72/day
+
+    // Recursive: given that we need `unitsPerDay` of `name`, what do we need of its inputs?
+    function calcNeeds(name, unitsPerDay){
+      var sch = SCH[name];
+      if(!sch) return; // P0 raw resource — stop
+      needed[name] = (needed[name]||0) + unitsPerDay;
+      // How many schematic runs/day to produce unitsPerDay?
+      var runsPerDay = unitsPerDay / sch.perRun;
+      // Each run consumes sch.inputs[inp] of each input
+      Object.keys(sch.inputs).forEach(function(inp){
+        calcNeeds(inp, runsPerDay * sch.inputs[inp]);
+      });
+    }
+
+    calcNeeds(finalProd, finalUnitsPerDay);
+  });
+
+  // Remove raw P0 resources (not in SCH)
+  Object.keys(needed).forEach(function(k){ if(!SCH[k]) delete needed[k]; });
+
+  // Step 2: build current production map from GAP_CHARS only
+  var current = {}; // name -> units/24h currently produced
+  characters.forEach(function(char){
+    if(!GAP_CHARS.includes(char.name)) return;
+    if(!char.piLoaded || !char.piData) return;
+    char.piData.forEach(function(planet){
+      (planet.pins||[]).forEach(function(pin){
+        if(!pin.productName) return;
+        var tier = SCH[pin.productName] ? SCH[pin.productName].tier : 1;
+        var rate = GAP_RATES[tier];
+        current[pin.productName] = (current[pin.productName]||0) + rate;
+      });
+    });
+  });
+
+  // Step 3: sort by tier desc then name, compute gap
+  var rows = Object.keys(needed).sort(function(a,b){
+    var ta = SCH[a]?SCH[a].tier:0, tb = SCH[b]?SCH[b].tier:0;
+    if(tb!==ta) return tb-ta;
+    return a.localeCompare(b);
+  });
+
+  var hasCharData = characters.some(function(c){ return GAP_CHARS.includes(c.name) && c.piLoaded; });
+
+  var html = '';
+
+  if(!hasCharData){
+    html += '<div style="font-family:var(--fm);font-size:11px;color:var(--amber);margin-bottom:12px;padding:8px 10px;background:rgba(255,170,0,0.07);border:1px solid rgba(255,170,0,0.2)">'+
+      'Load PI data in the Characters tab to see current production vs. needs.'+
+    '</div>';
+  }
+
+  // Group by tier
+  var tierGroups = {};
+  rows.forEach(function(name){
+    var t = SCH[name] ? SCH[name].tier : 1;
+    if(!tierGroups[t]) tierGroups[t] = [];
+    tierGroups[t].push(name);
+  });
+
+  var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
+  var tierLabels = {1:'P1',2:'P2',3:'P3',4:'P4'};
+
+  [4,3,2,1].forEach(function(tier){
+    if(!tierGroups[tier]) return;
+    html += '<div style="font-family:var(--fm);font-size:10px;font-weight:600;color:'+tierColors[tier]+';letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">'+tierLabels[tier]+'</div>';
+
+    tierGroups[tier].forEach(function(name){
+      var need = needed[name] || 0;
+      var have = current[name] || 0;
+      var gap  = need - have;
+      var icon = itemIcon(name, 32);
+      var iconHtml = icon ? '<img src="'+icon+'" style="width:18px;height:18px;flex-shrink:0;opacity:.8;vertical-align:middle" onerror="this.style.display=\'none\'">' : '';
+
+      var statusColor, statusSymbol;
+      if(!hasCharData){
+        statusColor = 'var(--text3)'; statusSymbol = '?';
+      } else if(gap <= 0){
+        statusColor = 'var(--green)'; statusSymbol = '✓';
+      } else if(have > 0){
+        statusColor = 'var(--amber)'; statusSymbol = '▲';
+      } else {
+        statusColor = 'var(--red)'; statusSymbol = '✗';
+      }
+
+      // Bar: fill = have/need ratio, capped at 100%
+      var pct = need > 0 ? Math.min(100, Math.round(have/need*100)) : 100;
+      var barColor = gap<=0 ? 'var(--green)' : (have>0 ? 'var(--amber)' : 'var(--red)');
+
+      html += '<div style="margin-bottom:8px">';
+      html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">';
+      html += iconHtml;
+      html += '<span style="font-family:var(--fm);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span>';
+      html += '<span style="font-family:var(--mono);font-size:11px;color:'+statusColor+';flex-shrink:0">'+statusSymbol+'</span>';
+      html += '</div>';
+      // Progress bar
+      html += '<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:2px">';
+      html += '<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:2px;transition:width .3s"></div>';
+      html += '</div>';
+      // Numbers
+      html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px">';
+      if(!hasCharData){
+        html += '<span style="color:var(--text3)">Need '+need.toLocaleString()+'/day</span>';
+        html += '<span style="color:var(--text3)">No data</span>';
+      } else if(gap <= 0){
+        html += '<span style="color:var(--text3)">Need '+need.toLocaleString()+'/day</span>';
+        html += '<span style="color:var(--green)">+'+Math.abs(gap).toLocaleString()+' surplus</span>';
+      } else {
+        html += '<span style="color:var(--text3)">'+have.toLocaleString()+' / '+need.toLocaleString()+' /day</span>';
+        html += '<span style="color:'+barColor+'">▲ '+gap.toLocaleString()+' short</span>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+  });
+
+  el.innerHTML = html;
 }
 
 // ════════════════════════════════════════════════════════
@@ -1574,6 +1747,7 @@ async function loadCharPI(charIdx, skipRender){
       renderMultiGrid(getMultiFiltered());
       if(chainSel) renderChainDetail();
       if(multiSel.length) renderMultiDetail();
+      renderGapAnalysis();
       renderTimers();
       renderCharList(new Set([charIdx]));
     }
@@ -1805,6 +1979,7 @@ document.getElementById('refreshTimersBtn').addEventListener('click', async func
   renderMultiGrid(getMultiFiltered());
   if(chainSel) renderChainDetail();
   if(multiSel.length) renderMultiDetail();
+  renderGapAnalysis();
   renderCharList(openCards);
   renderTimers();
   btn.disabled = false;
@@ -1829,6 +2004,7 @@ document.getElementById('refreshAllBtn').addEventListener('click', async functio
   renderMultiGrid(getMultiFiltered());
   if(chainSel) renderChainDetail();
   if(multiSel.length) renderMultiDetail();
+  renderGapAnalysis();
   renderCharList(openCards);
   renderTimers();
   btn.disabled = false;
