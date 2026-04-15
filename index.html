@@ -1309,29 +1309,58 @@ function renderMaxProduction(){
     });
   });
 
-  // Step 2: for each selected product, walk the chain bottom-up and find the
-  // maximum sustainable output constrained by each input's available supply.
-  // maxSustainable(name) = min over all inputs of: supply_of_input / input_qty_per_unit_of_output
-  function maxSustainable(name){
-    var s = SCH[name];
-    if(!s) return Infinity; // P0 raw — no constraint from this side
-    var have = current[name] || 0;
-    // This product's own factory output constrains how much we can make
-    var ownLimit = have;
-    // Each input also constrains: for each unit of `name` produced,
-    // we consume (inputs[inp] / perRun) units of `inp`
-    var inputLimit = Infinity;
-    Object.keys(s.inputs).forEach(function(inp){
-      var consumedPerUnit = s.inputs[inp] / s.perRun; // units of inp per unit of output
-      var inpMax = maxSustainable(inp); // how many units of inp the chain can supply/day
-      var limitFromInp = inpMax / consumedPerUnit;
-      if(limitFromInp < inputLimit) inputLimit = limitFromInp;
-    });
-    return Math.min(ownLimit, inputLimit);
+  // Step 2: find the maximum X such that producing X units/day of EACH selected
+  // product simultaneously doesn't exceed any item's available supply.
+  // We do this by binary-searching on X, computing total demand at that rate
+  // across all selected products, and checking nothing exceeds current supply.
+
+  function totalDemandAt(x){
+    // Returns {name -> units/day needed} when producing x/day of each selected product
+    var demand = {};
+    function addDemand(name, upd){
+      var sch = SCH[name]; if(!sch) return;
+      demand[name] = (demand[name]||0) + upd;
+      var rpd = upd / sch.perRun;
+      Object.keys(sch.inputs).forEach(function(inp){ addDemand(inp, rpd * sch.inputs[inp]); });
+    }
+    multiSel.forEach(function(prod){ addDemand(prod, x); });
+    return demand;
   }
 
-  // Step 3: for each item in the chain, also compute what it can supply
-  // given upstream constraints (used to highlight the bottleneck)
+  function isFeasibleAt(x){
+    if(x <= 0) return true;
+    var demand = totalDemandAt(x);
+    return Object.keys(demand).every(function(name){
+      if(!SCH[name]) return true; // P0, no constraint
+      return (current[name]||0) >= demand[name] - 0.001; // small float tolerance
+    });
+  }
+
+  // Binary search for max feasible X
+  var lo = 0, hi = 100000, maxX = 0;
+  for(var iter = 0; iter < 40; iter++){
+    var mid = (lo + hi) / 2;
+    if(isFeasibleAt(mid)){ maxX = mid; lo = mid; }
+    else hi = mid;
+  }
+  var globalMax = Math.floor(maxX);
+
+  // Also find the binding constraint — which item runs out first?
+  var bindingItem = null, bindingRatio = Infinity;
+  if(globalMax > 0){
+    var demandAt1 = totalDemandAt(1); // demand ratios per unit of output
+    Object.keys(demandAt1).forEach(function(name){
+      if(!SCH[name]) return;
+      var have = current[name]||0;
+      if(demandAt1[name] > 0){
+        var ratio = have / demandAt1[name]; // max X this item can support
+        if(ratio < bindingRatio){ bindingRatio = ratio; bindingItem = name; }
+      }
+    });
+  }
+
+  // Per-item effective supply = min(current output, what the chain upstream can feed it)
+  // For display purposes show each item's individual factory output
   var allRelevant = {};
   multiSel.forEach(function(prod){
     function mark(name){
@@ -1342,13 +1371,12 @@ function renderMaxProduction(){
     mark(prod);
   });
 
+  // Demand at globalMax — to show how much of each item is being consumed
+  var demandAtMax = globalMax > 0 ? totalDemandAt(globalMax) : {};
+
   var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
   var tierLabels = {1:'P1',2:'P2',3:'P3',4:'P4'};
   var facilityLabel = function(t){ return t===1?'Basic Fac.':t===4?'Hi-Tech Plant':'Adv. Fac.'; };
-
-  // Compute per-final-product constrained max for the header summary
-  var finalMaxes = {};
-  multiSel.forEach(function(prod){ finalMaxes[prod] = Math.floor(maxSustainable(prod)); });
 
   // Group by tier
   var tierGroups = {};
@@ -1361,29 +1389,18 @@ function renderMaxProduction(){
 
   var html = '';
 
-  // Summary bar at top for selected final products
-  multiSel.forEach(function(prod){
-    var constrained = finalMaxes[prod];
-    var raw = current[prod] || 0;
-    var isBottlenecked = constrained < raw;
-    var tier = SCH[prod] ? SCH[prod].tier : 1;
-    var icon = itemIcon(prod, 32);
-    var iconHtml = icon ? '<img src="'+icon+'" style="width:16px;height:16px;flex-shrink:0;opacity:.85;vertical-align:middle;margin-right:4px" onerror="this.style.display=\'none\'">' : '';
-    html += '<div style="background:var(--bg2);border:1px solid var(--border2);padding:8px 10px;margin-bottom:8px">';
-    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
-    html += iconHtml;
-    html += '<span style="font-family:var(--fd);font-size:13px;font-weight:600;color:'+(tierColors[tier]||'var(--text)')+'">'+prod+'</span>';
-    html += '<span style="font-family:var(--mono);font-size:14px;color:var(--green);margin-left:auto">'+constrained.toLocaleString()+'/day</span>';
-    html += '</div>';
-    if(isBottlenecked){
-      html += '<div style="font-family:var(--fm);font-size:10px;color:var(--amber)">⚠ Bottlenecked — raw factory output is '+Math.round(raw).toLocaleString()+'/day but inputs limit to '+constrained.toLocaleString()+'/day</div>';
-    } else if(raw === 0){
-      html += '<div style="font-family:var(--fm);font-size:10px;color:var(--red)">No factories producing this</div>';
-    } else {
-      html += '<div style="font-family:var(--fm);font-size:10px;color:var(--green)">Fully supplied by chain</div>';
-    }
-    html += '</div>';
-  });
+  // Summary: single global max for all selected products together
+  html += '<div style="background:var(--bg2);border:1px solid var(--border2);padding:10px 12px;margin-bottom:10px">';
+  html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Max Sustainable Output · all products equally</div>';
+  html += '<div style="font-family:var(--mono);font-size:22px;color:var(--green);font-weight:600">'+globalMax.toLocaleString()+' /day each</div>';
+  if(bindingItem){
+    html += '<div style="font-family:var(--fm);font-size:11px;color:var(--amber);margin-top:5px">⚠ Bottleneck: <b>'+bindingItem+'</b></div>';
+    html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3)">'+Math.round(current[bindingItem]||0).toLocaleString()+'/day available · '+Math.round(demandAtMax[bindingItem]||0).toLocaleString()+'/day needed at this rate</div>';
+  }
+  if(multiSel.length > 1){
+    html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-top:4px">Shared inputs split across all '+multiSel.length+' products simultaneously</div>';
+  }
+  html += '</div>';
 
   html += '<div class="divider"></div>';
 
@@ -1399,28 +1416,32 @@ function renderMaxProduction(){
     items.forEach(function(name){
       var isFinal = multiSel.indexOf(name) >= 0;
       var have = current[name] || 0;
-      var constrained = Math.floor(maxSustainable(name));
-      var isBottleneck = have > 0 && constrained < have; // inputs limit this item
-      var noFactory = have === 0;
+      var demand = demandAtMax[name] || 0;
+      var isBinding = name === bindingItem;
+      var noFactory = have === 0 && !!SCH[name];
       var t = SCH[name] ? SCH[name].tier : 1;
       var ratePerPin = GAP_RATES[t];
       var pinCount = have > 0 ? Math.round(have / ratePerPin) : 0;
       var icon = itemIcon(name, 32);
       var iconHtml = icon ? '<img src="'+icon+'" style="width:16px;height:16px;flex-shrink:0;opacity:.8;vertical-align:middle" onerror="this.style.display=\'none\'">' : '';
 
-      var valColor = noFactory ? 'var(--red)' : isBottleneck ? 'var(--amber)' : 'var(--green)';
+      var valColor = noFactory ? 'var(--red)' : isBinding ? 'var(--amber)' : 'var(--green)';
       var nameColor = isFinal ? 'var(--text)' : 'var(--text2)';
 
       html += '<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--border)">';
       html += iconHtml;
-      html += '<span style="font-family:var(--fm);font-size:11px;color:'+nameColor+';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(isFinal?'<b>'+name+'</b>':name)+'</span>';
+      html += '<span style="font-family:var(--fm);font-size:11px;color:'+nameColor+';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
+      html += (isFinal?'<b>':'')+name+(isFinal?'</b>':'');
+      if(isBinding) html += ' <span style="color:var(--amber);font-size:10px">⚠</span>';
+      html += '</span>';
       html += '<div style="text-align:right;flex-shrink:0">';
       if(noFactory){
         html += '<div style="font-family:var(--mono);font-size:11px;color:var(--red)">0/day</div>';
         html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3)">no factories</div>';
       } else {
-        html += '<div style="font-family:var(--mono);font-size:11px;color:'+valColor+'">'+(isBottleneck?constrained.toLocaleString()+' ⚠':Math.round(have).toLocaleString())+'/day</div>';
-        html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3)">'+pinCount+' '+facilityLabel(t)+(pinCount!==1?'s':'')+(isBottleneck?' · input-limited':'')+'</div>';
+        html += '<div style="font-family:var(--mono);font-size:11px;color:'+valColor+'">'+Math.round(have).toLocaleString()+'/day</div>';
+        var demandStr = demand > 0 ? ' · uses '+Math.round(demand).toLocaleString() : '';
+        html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3)">'+pinCount+' '+facilityLabel(t)+(pinCount!==1?'s':'')+demandStr+'</div>';
       }
       html += '</div>';
       html += '</div>';
