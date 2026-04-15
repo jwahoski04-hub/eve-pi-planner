@@ -737,7 +737,12 @@ document.getElementById('chainGrid').addEventListener('click',function(e){
 document.getElementById('chainQty').addEventListener('input',function(){if(chainSel)renderChainDetail();});
 document.getElementById('taxRate').addEventListener('input',function(){if(chainSel)renderChainDetail();if(multiSel.length)renderMultiDetail();});
 document.getElementById('multiOutQty').addEventListener('input',function(){if(multiSel.length)renderMultiDetail();});
-document.getElementById('gapTargetQty').addEventListener('input',function(){renderGapAnalysis();});
+document.getElementById('gapTargetQty').addEventListener('input',function(){
+  var v = parseInt(this.value)||1;
+  document.getElementById('multiOutQty').value = v;
+  if(multiSel.length) renderMultiDetail();
+  renderGapAnalysis();
+});
 
 // ── Character producer map ───────────────────────────────
 // Returns { productName: [{charId, charName}] }
