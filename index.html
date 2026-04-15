@@ -291,6 +291,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 <!-- MULTI TAB -->
 <div id="tab-multi" class="tab">
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
+    <button class="btn-p" id="optimizeBtn" style="font-size:11px;padding:5px 12px">⚡ Optimize Production</button>
+    <span style="font-family:var(--fm);font-size:10px;color:var(--text3)" id="optimizeStatus"></span>
     <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;margin-left:auto">
       <input type="checkbox" id="showGapPanel" checked
         onchange="updateAnalysisPanels()"
@@ -309,6 +311,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <!-- Left: existing multi-product content -->
     <div>
       <div class="sbar"><input type="text" id="multiSearch" placeholder="Search to add products to your plan..."></div>
+      <div id="optimizeResults" style="display:none;background:var(--bg2);border:1px solid var(--border2);margin-bottom:12px;padding:0">
+        <div style="background:var(--bg1);padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--fd);font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px">Optimization Results</span>
+          <span style="font-family:var(--fm);font-size:10px;color:var(--text3);margin-left:auto">click a row to load into plan</span>
+          <button onclick="document.getElementById('optimizeResults').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
+        </div>
+        <div id="optimizeResultsBody" style="padding:8px 14px"></div>
+      </div>
       <div id="multiGrid"></div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div class="slabel" style="margin-bottom:0">Active Plan</div>
@@ -660,12 +670,214 @@ function updateAnalysisPanels(){
   maxPanel.style.display = showMax ? '' : 'none';
 
   var nVisible = (showGap ? 1 : 0) + (showMax ? 1 : 0);
-  // Update inner panels grid
   analysisPanels.style.gridTemplateColumns = nVisible === 2 ? '1fr 1fr' : '1fr';
-  // Show/hide outer right column
   analysisPanels.style.display = nVisible === 0 ? 'none' : 'grid';
-  // Collapse right column when nothing visible
   grid.style.gridTemplateColumns = nVisible === 0 ? '1fr' : '1fr 660px';
+}
+
+// ── Production Optimizer ──────────────────────────────────────────────
+// Scores every candidate product (and combinations up to 4) against
+// current factory output, ranked by: ISK/day (if prices loaded) then
+// material utilization %.
+function runOptimizer(){
+  var btn = document.getElementById('optimizeBtn');
+  var status = document.getElementById('optimizeStatus');
+  var resultsDiv = document.getElementById('optimizeResults');
+  var body = document.getElementById('optimizeResultsBody');
+
+  // Check we have char data
+  var hasData = characters.some(function(c){ return GAP_CHARS.includes(c.name) && c.piLoaded; });
+  if(!hasData){
+    status.innerHTML = '<span style="color:var(--amber)">Load PI data in Characters tab first</span>';
+    setTimeout(function(){status.textContent='';},3000);
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Analyzing…';
+
+  // Build current production map
+  var current = {};
+  characters.forEach(function(char){
+    if(!GAP_CHARS.includes(char.name)) return;
+    if(!char.piLoaded || !char.piData) return;
+    char.piData.forEach(function(planet){
+      (planet.pins||[]).forEach(function(pin){
+        if(!pin.productName) return;
+        var t = SCH[pin.productName] ? SCH[pin.productName].tier : 1;
+        current[pin.productName] = (current[pin.productName]||0) + GAP_RATES[t];
+      });
+    });
+  });
+
+  // Total factory-hours available (sum of all current output)
+  var totalCurrent = Object.values(current).reduce(function(s,v){return s+v;},0);
+
+  // Compute feasible max for a given set of products (shared pool)
+  function feasibleMax(prods){
+    if(!prods.length) return 0;
+    // Binary search on X = units/day of each product simultaneously
+    function demandAt(x){
+      var d = {};
+      prods.forEach(function(prod){
+        function add(name, upd){
+          var s = SCH[name]; if(!s) return;
+          d[name] = (d[name]||0) + upd;
+          var rpd = upd / s.perRun;
+          Object.keys(s.inputs).forEach(function(inp){ add(inp, rpd * s.inputs[inp]); });
+        }
+        add(prod, x);
+      });
+      return d;
+    }
+    function feasible(x){
+      if(x<=0) return true;
+      var d = demandAt(x);
+      return Object.keys(d).every(function(n){
+        if(!SCH[n]) return true;
+        return (current[n]||0) >= d[n] - 0.001;
+      });
+    }
+    var lo=0,hi=100000,best=0;
+    for(var i=0;i<40;i++){
+      var mid=(lo+hi)/2;
+      if(feasible(mid)){best=mid;lo=mid;}else hi=mid;
+    }
+    return Math.floor(best);
+  }
+
+  // Material utilization: what fraction of total current output is consumed
+  function utilization(prods, x){
+    if(x<=0 || !prods.length) return 0;
+    var d = {};
+    prods.forEach(function(prod){
+      function add(name, upd){
+        var s=SCH[name];if(!s)return;
+        d[name]=(d[name]||0)+upd;
+        var rpd=upd/s.perRun;
+        Object.keys(s.inputs).forEach(function(inp){add(inp,rpd*s.inputs[inp]);});
+      }
+      add(prod, x);
+    });
+    var consumed = 0;
+    Object.keys(d).forEach(function(n){
+      if(SCH[n]) consumed += Math.min(d[n], current[n]||0);
+    });
+    return totalCurrent > 0 ? consumed / totalCurrent : 0;
+  }
+
+  // ISK/day score
+  function iskPerDay(prods, x){
+    if(x<=0) return 0;
+    return prods.reduce(function(s,p){
+      var price = nameToPrice[p];
+      return s + (price ? price * x : 0);
+    }, 0);
+  }
+
+  var hasPrices = Object.keys(nameToPrice).length > 0;
+
+  // Candidate products: all items where at least one input is being produced
+  // or where the item itself is produced
+  var allProds = Object.keys(SCH);
+  var candidates = allProds.filter(function(p){
+    // Must have at least partial supply chain coverage
+    var raws={},ints={};
+    resolve(p,1,raws,ints);
+    return Object.keys(ints).some(function(n){ return (current[n]||0)>0; })
+        || (current[p]||0)>0;
+  });
+
+  // Score single products
+  var singles = candidates.map(function(p){
+    var x = feasibleMax([p]);
+    return {
+      prods:[p], x:x,
+      isk: iskPerDay([p],x),
+      util: utilization([p],x)
+    };
+  }).filter(function(r){return r.x>0;});
+
+  // Score pairs — only pairs where both have some coverage
+  var pairs = [];
+  for(var i=0;i<singles.length;i++){
+    for(var j=i+1;j<singles.length;j++){
+      var combo = [singles[i].prods[0], singles[j].prods[0]];
+      var x = feasibleMax(combo);
+      if(x>0) pairs.push({
+        prods:combo, x:x,
+        isk:iskPerDay(combo,x),
+        util:utilization(combo,x)
+      });
+    }
+  }
+
+  // Score triples — top 15 singles only to keep it fast
+  var top15 = singles.slice().sort(function(a,b){
+    return hasPrices ? b.isk-a.isk : b.util-a.util;
+  }).slice(0,15);
+  var triples = [];
+  for(var i=0;i<top15.length;i++){
+    for(var j=i+1;j<top15.length;j++){
+      for(var k=j+1;k<top15.length;k++){
+        var combo=[top15[i].prods[0],top15[j].prods[0],top15[k].prods[0]];
+        var x=feasibleMax(combo);
+        if(x>0) triples.push({
+          prods:combo,x:x,
+          isk:iskPerDay(combo,x),
+          util:utilization(combo,x)
+        });
+      }
+    }
+  }
+
+  // Combine and rank
+  var all = singles.concat(pairs).concat(triples);
+  all.sort(function(a,b){
+    return hasPrices ? b.isk-a.isk : b.util-a.util;
+  });
+  var top = all.slice(0,12);
+
+  // Render results
+  var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="background:var(--bg2);border-bottom:1px solid var(--border2)">'+
+    '<th style="padding:7px 10px;font-family:var(--fm);font-size:10px;color:var(--accent);text-align:left">Products</th>'+
+    '<th style="padding:7px 10px;font-family:var(--fm);font-size:10px;color:var(--accent);text-align:center">Max/day each</th>'+
+    (hasPrices?'<th style="padding:7px 10px;font-family:var(--fm);font-size:10px;color:var(--accent);text-align:right">ISK/day</th>':'')+
+    '<th style="padding:7px 10px;font-family:var(--fm);font-size:10px;color:var(--accent);text-align:center">Material use</th>'+
+    '</tr></thead><tbody>';
+
+  top.forEach(function(r,idx){
+    var prodHtml = r.prods.map(function(p){
+      var t = SCH[p]?SCH[p].tier:1;
+      var icon = itemIcon(p,32);
+      var iconHtml = icon?'<img src="'+icon+'" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;opacity:.85" onerror="this.style.display=\'none\'">':'';
+      return '<span style="font-family:var(--fd);font-size:12px;color:'+(tierColors[t]||'var(--text)')+'">'+iconHtml+p+'</span>';
+    }).join('<span style="color:var(--text3)"> + </span>');
+
+    var utilPct = Math.round(r.util*100);
+    var utilColor = utilPct>=80?'var(--green)':utilPct>=50?'var(--amber)':'var(--text2)';
+
+    html += '<tr style="border-bottom:1px solid var(--border);cursor:pointer" '+
+      'onclick="multiSel='+JSON.stringify(r.prods)+';document.getElementById(\'multiOutQty\').value='+r.x+';document.getElementById(\'gapTargetQty\').value='+r.x+';renderMultiGrid(getMultiFiltered());renderMultiPills();renderMultiDetail();renderGapAnalysis();renderMaxProduction();" '+
+      'onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">';
+    html += '<td style="padding:7px 10px">'+prodHtml+'</td>';
+    html += '<td style="padding:7px 10px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--green)">'+r.x.toLocaleString()+'</td>';
+    if(hasPrices) html += '<td style="padding:7px 10px;text-align:right;font-family:var(--fm);color:var(--green)">'+fmtISK(r.isk)+'/day</td>';
+    html += '<td style="padding:7px 10px;text-align:center;font-family:var(--mono);font-size:12px;color:'+utilColor+'">'+utilPct+'%</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  if(!hasPrices) html += '<div style="font-family:var(--fm);font-size:10px;color:var(--text3);padding:6px 2px">Fetch Jita prices to see ISK/day rankings. Currently ranked by material utilization.</div>';
+  html += '</div>';
+
+  body.innerHTML = html;
+  resultsDiv.style.display = '';
+  status.innerHTML = '<span style="color:var(--green)">Found '+top.length+' combinations</span>';
+  setTimeout(function(){status.textContent='';},3000);
+  btn.disabled = false;
 }
 
 // ── Helpers ─────────────────────────────────────────
@@ -2589,6 +2801,7 @@ function renderFuelTab(){
 
 document.getElementById('fuelRuns').addEventListener('input', renderFuelTab);
 document.getElementById('fuelFetchBtn').addEventListener('click', fetchFuelPrices);
+document.getElementById('optimizeBtn').addEventListener('click', runOptimizer);
 
 renderChainGrid(ALL);
 renderMultiGrid(ALL);
