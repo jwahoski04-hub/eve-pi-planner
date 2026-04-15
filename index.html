@@ -290,11 +290,18 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 
 <!-- MULTI TAB -->
 <div id="tab-multi" class="tab">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
     <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;margin-left:auto">
-      <input type="checkbox" id="showAnalysisPanels" checked onchange="document.getElementById('analysisPanels').style.display=this.checked?'':'none';document.getElementById('tab-multi').querySelector('.tab-multi-grid').style.gridTemplateColumns=this.checked?'1fr 660px':'1fr';"
+      <input type="checkbox" id="showGapPanel" checked
+        onchange="updateAnalysisPanels()"
         style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
-      <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Show Gap & Max Production</span>
+      <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Gap Analysis</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none">
+      <input type="checkbox" id="showMaxPanel" checked
+        onchange="updateAnalysisPanels()"
+        style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
+      <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Max Production</span>
     </label>
   </div>
   <div class="tab-multi-grid" style="display:grid;grid-template-columns:1fr 660px;gap:16px;align-items:start">
@@ -640,6 +647,26 @@ var ALL=Object.keys(SCH).sort(function(a,b){return a.localeCompare(b);});
 var nameToPrice={};
 var chainSel=null,multiSel=[];
 window.gapHideSufficient = false;
+
+function updateAnalysisPanels(){
+  var showGap = document.getElementById('showGapPanel').checked;
+  var showMax = document.getElementById('showMaxPanel').checked;
+  var gapPanel = document.getElementById('gapPanel');
+  var maxPanel = document.getElementById('maxProdPanel');
+  var analysisPanels = document.getElementById('analysisPanels');
+  var grid = document.querySelector('.tab-multi-grid');
+
+  gapPanel.style.display = showGap ? '' : 'none';
+  maxPanel.style.display = showMax ? '' : 'none';
+
+  var nVisible = (showGap ? 1 : 0) + (showMax ? 1 : 0);
+  // Update inner panels grid
+  analysisPanels.style.gridTemplateColumns = nVisible === 2 ? '1fr 1fr' : '1fr';
+  // Show/hide outer right column
+  analysisPanels.style.display = nVisible === 0 ? 'none' : 'grid';
+  // Collapse right column when nothing visible
+  grid.style.gridTemplateColumns = nVisible === 0 ? '1fr' : '1fr 660px';
+}
 
 // ── Helpers ─────────────────────────────────────────
 function fmt(n){
