@@ -343,8 +343,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none">
-                <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Hide sufficient</span>
-                <span id="gapHideToggle" onclick="window.gapHideSufficient=!window.gapHideSufficient;this.setAttribute('data-on',window.gapHideSufficient?'1':'0');renderGapAnalysis();"
+                <span id="gapHideLabel" style="font-family:var(--fm);font-size:11px;color:var(--text2)">Hide sufficient</span>
+                <span id="gapHideToggle" onclick="window.gapHideSufficient=!window.gapHideSufficient;this.setAttribute('data-on',window.gapHideSufficient?'1':'0');document.getElementById('gapHideLabel').textContent=window.gapHideSufficient?'Show sufficient':'Hide sufficient';renderGapAnalysis();"
                   data-on="0"
                   style="display:inline-flex;width:32px;height:18px;border-radius:9px;background:var(--bg3);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
                   <span style="position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:left .2s,background .2s;pointer-events:none" id="gapHideThumb"></span>
@@ -1405,8 +1405,8 @@ function renderMaxProduction(){
 
   var tierColors = {1:'var(--t1-c)',2:'var(--t2-c)',3:'var(--t3-c)',4:'var(--t4-c)'};
   var tierLabels = {1:'P1',2:'P2',3:'P3',4:'P4'};
-  var tierBg     = {1:'rgba(0,102,204,0.07)',2:'rgba(0,180,80,0.06)',3:'rgba(255,150,0,0.06)',4:'rgba(180,60,220,0.07)'};
-  var tierHdrBg  = {1:'rgba(0,102,204,0.14)',2:'rgba(0,180,80,0.12)',3:'rgba(255,150,0,0.11)',4:'rgba(180,60,220,0.13)'};
+  var tierBg     = {1:'rgba(0,102,204,0.14)',2:'rgba(0,180,80,0.12)',3:'rgba(255,150,0,0.12)',4:'rgba(180,60,220,0.14)'};
+  var tierHdrBg  = {1:'rgba(0,102,204,0.25)',2:'rgba(0,180,80,0.21)',3:'rgba(255,150,0,0.20)',4:'rgba(180,60,220,0.23)'};
   var facilityLabel = function(t){ return t===1?'Basic Fac.':t===4?'Hi-Tech Plant':'Adv. Fac.'; };
 
   // Group by tier
