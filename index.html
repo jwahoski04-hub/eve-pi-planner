@@ -98,7 +98,6 @@ tr:hover td{background:rgba(0,170,255,.03)}
 .sell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:18px}
 .gap-info-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-size:11px;cursor:pointer;flex-shrink:0;position:relative}
 .gap-info-btn:hover{border-color:var(--accent);color:var(--accent)}
-.gap-info-btn:hover+#gapRatesTooltip,.gap-info-btn:focus+#gapRatesTooltip{display:block!important}
 .sell-card{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;position:relative}
 .sell-card.best{border-color:var(--green);background:rgba(0,221,102,0.04)}
 .sell-card.best::after{content:'BEST';position:absolute;top:8px;right:10px;font-family:var(--fm);font-size:11px;color:var(--green);letter-spacing:1px}
@@ -316,18 +315,18 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <div id="gapPanel" style="position:sticky;top:12px">
       <div style="background:var(--bg1);border:1px solid var(--border);padding:0">
         <div style="background:var(--bg2);padding:10px 14px;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative">
             <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase">Gap Analysis</span>
             <!-- Rates tooltip -->
-            <span class="gap-info-btn" title="">&#9432;</span>
-            <div id="gapRatesTooltip" style="display:none;position:absolute;z-index:99;background:var(--bg2);border:1px solid var(--border2);padding:10px 12px;font-family:var(--fm);font-size:11px;color:var(--text2);min-width:220px;line-height:1.8;box-shadow:0 4px 16px rgba(0,0,0,.4)">
+            <span class="gap-info-btn" onmouseenter="document.getElementById('gapRatesTooltip').style.display='block'" onmouseleave="document.getElementById('gapRatesTooltip').style.display='none'">&#9432;</span>
+            <div id="gapRatesTooltip" style="display:none;position:absolute;left:0;top:32px;z-index:99;background:var(--bg2);border:1px solid var(--border2);padding:10px 12px;font-family:var(--fm);font-size:11px;color:var(--text2);min-width:220px;line-height:1.8;box-shadow:0 4px 16px rgba(0,0,0,.4)">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px">EVE Default Production / 24h</div>
               <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 12px">
                 <span style="color:var(--text3)">P0 Raw</span><span>Extractor-dependent (varies)</span>
-                <span style="color:var(--t1-c)">P1</span><span>960 units &nbsp;<span style="color:var(--text3)">(20/run × 48 runs)</span></span>
-                <span style="color:var(--t2-c)">P2</span><span>120 units &nbsp;<span style="color:var(--text3)">(5/run × 24 runs)</span></span>
-                <span style="color:var(--t3-c)">P3</span><span>72 units &nbsp;<span style="color:var(--text3)">(3/run × 24 runs)</span></span>
-                <span style="color:var(--t4-c)">P4</span><span>24 units &nbsp;<span style="color:var(--text3)">(1/run × 24 runs)</span></span>
+                <span style="color:var(--t1-c)">P1</span><span>960 units &nbsp;<span style="color:var(--text3)">(Basic Industry Facility)</span></span>
+                <span style="color:var(--t2-c)">P2</span><span>120 units &nbsp;<span style="color:var(--text3)">(Advanced Industry Facility)</span></span>
+                <span style="color:var(--t3-c)">P3</span><span>72 units &nbsp;<span style="color:var(--text3)">(Advanced Industry Facility)</span></span>
+                <span style="color:var(--t4-c)">P4</span><span>24 units &nbsp;<span style="color:var(--text3)">(Hi-Tech Production Plant)</span></span>
               </div>
               <div style="color:var(--text3);font-size:10px;margin-top:6px">Per factory pin/day. Multi-pin planets multiply accordingly.</div>
             </div>
@@ -1190,6 +1189,7 @@ function renderGapAnalysis(){
       var pinsNeeded = need > 0 ? Math.ceil(need / ratePerPin) : 0;
       var pinsHave   = have > 0 ? Math.floor(have / ratePerPin) : 0;
       var pinsGap    = Math.max(0, pinsNeeded - pinsHave);
+      var facilityName = tier===1 ? 'Basic Fac.' : tier===4 ? 'Hi-Tech Plant' : 'Adv. Fac.';
 
       var statusColor, statusSymbol;
       if(!hasCharData){
@@ -1224,7 +1224,7 @@ function renderGapAnalysis(){
       html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;margin-bottom:1px">';
       if(!hasCharData){
         html += '<span style="color:var(--text3)">Need '+needStr+'/day</span>';
-        html += '<span style="color:var(--text3)">'+pinsNeeded+' pin'+(pinsNeeded!==1?'s':'')+' needed</span>';
+        html += '<span style="color:var(--text3)">'+pinsNeeded+' '+facilityName+(pinsNeeded!==1?'s':'')+' needed</span>';
       } else if(gap <= 0){
         html += '<span style="color:var(--text3)">'+needStr+'/day</span>';
         html += '<span style="color:var(--green)">+'+gapStr+' surplus</span>';
@@ -1236,8 +1236,8 @@ function renderGapAnalysis(){
       // Factory pins line
       if(hasCharData){
         html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3)">';
-        html += '<span>'+pinsHave+' / '+pinsNeeded+' pin'+(pinsNeeded!==1?'s':'')+' @ '+ratePerPin+'/day ea</span>';
-        if(pinsGap > 0) html += '<span style="color:'+barColor+'">+'+pinsGap+' needed</span>';
+        html += '<span>'+pinsHave+' / '+pinsNeeded+' '+facilityName+(pinsNeeded!==1?'s':'')+' @ '+ratePerPin+'/day ea</span>';
+        if(pinsGap > 0) html += '<span style="color:'+barColor+'">+'+pinsGap+' '+facilityName+(pinsGap!==1?'s':'')+' needed</span>';
         else html += '<span style="color:var(--green)">covered</span>';
         html += '</div>';
       }
