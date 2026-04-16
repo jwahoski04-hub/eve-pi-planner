@@ -397,9 +397,28 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 
 <!-- COLONY TAB — PLANET EXTRACTION TIMERS -->
 <div id="tab-colony" class="tab">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
     <div class="slabel" style="margin-bottom:0">Planet Extraction Timers</div>
-    <button class="btn-sm" id="refreshTimersBtn">&#8635; Refresh</button>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <!-- Threshold config -->
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block;flex-shrink:0"></span>
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Red under</span>
+        <input type="number" id="timerRedHrs" value="24" min="1" max="999"
+          style="width:48px;padding:3px 5px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;text-align:center"
+          onchange="renderTimers()">
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text3)">hrs</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block;flex-shrink:0"></span>
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">Amber under</span>
+        <input type="number" id="timerAmberHrs" value="72" min="1" max="999"
+          style="width:48px;padding:3px 5px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;text-align:center"
+          onchange="renderTimers()">
+        <span style="font-family:var(--fm);font-size:11px;color:var(--text3)">hrs</span>
+      </div>
+      <button class="btn-sm" id="refreshTimersBtn">&#8635; Refresh</button>
+    </div>
   </div>
   <div id="timersList"><div class="empty">Load PI data in the Characters tab to see extraction timers.</div></div>
 </div>
@@ -1528,9 +1547,12 @@ var timerInterval = null;
 function pad(n){ return n < 10 ? '0'+n : ''+n; }
 
 function urgencyClass(ms){
-  if(ms <= 0) return 'expired';
-  if(ms < 3*24*3600*1000) return 'urgent';  // < 3 days = amber
-  return 'ok';                               // >= 3 days = green
+  var redMs   = (parseInt(document.getElementById('timerRedHrs').value)  ||  24) * 3600000;
+  var amberMs = (parseInt(document.getElementById('timerAmberHrs').value) ||  72) * 3600000;
+  if(ms <= 0)        return 'expired';
+  if(ms < redMs)     return 'expired';   // below red threshold → red
+  if(ms < amberMs)   return 'urgent';    // below amber threshold → amber
+  return 'ok';                           // above amber → green
 }
 
 function fmtCountdown(ms){
@@ -1569,61 +1591,26 @@ function renderTimers(){
                p.extractor_details.product_type_id;
       });
 
-      // Sum actual stored volume — only launchpads and storage facilities
-      var usedM3 = 0;
-      var totalCap = 0;
-      pins.forEach(function(p){
-        var isLP = LP_CHAR_IDS.has(p.type_id);
-        var isSF = SF_CHAR_IDS.has(p.type_id);
-        if(isLP) totalCap += LP_CAP;
-        else if(isSF) totalCap += SF_CAP;
-
-        if((isLP || isSF) && p.contents && p.contents.length){
-          p.contents.forEach(function(c){
-            usedM3 += c.amount * (PI_VOLS[c.type_id] || 0.38);
-          });
-        }
-      });
-      if(totalCap === 0 && !ecus.length) return;
-      if(totalCap === 0) totalCap = LP_CAP;
-
-      var fillPct = Math.min(100, Math.round((usedM3 / totalCap) * 100));
-      var hasStorage = totalCap > 0;
-      var hasContents = pins.some(function(p){
-        return (LP_CHAR_IDS.has(p.type_id) || SF_CHAR_IDS.has(p.type_id)) &&
-               p.contents != null;
-      });
-
-      // Sync time = last_update from planet list (when CCP last recalculated colony)
-      var syncMs = planet.last_update ? new Date(planet.last_update).getTime() : 0;
-      planet.syncMs = syncMs;
+      if(!ecus.length) return;
 
       var ptype = planet.planetTypeName || 'Planet';
       var col   = PLANET_COLORS[ptype] || ['#1a1a22','#8899bb'];
       var sysName = planet.systemName || ('System '+planet.solar_system_id);
 
-      if(ecus.length){
-        // Extraction planet — one card per ECU with countdown + storage bar
-        ecus.forEach(function(ecu){
-          var expiryMs = new Date(ecu.expiry_time).getTime();
-          if(!expiryMs || isNaN(expiryMs)) return;
+      ecus.forEach(function(ecu){
+        var expiryMs = new Date(ecu.expiry_time).getTime();
+        if(!expiryMs || isNaN(expiryMs)) return;
 
-          var product     = ecu.productName || typeNameCache[ecu.extractor_details.product_type_id] || 'Unknown';
-          var cycleTime   = ecu.extractor_details.cycle_time || 0;
-          var qtyPerCycle = ecu.extractor_details.qty_per_cycle || 0;
+        var product     = ecu.productName || typeNameCache[ecu.extractor_details.product_type_id] || 'Unknown';
+        var cycleTime   = ecu.extractor_details.cycle_time || 0;
+        var qtyPerCycle = ecu.extractor_details.qty_per_cycle || 0;
 
-          planetRows.push({
-            systemName: sysName, ptype: ptype, col: col,
-            product: product, expiry: expiryMs,
-            cycleTime: cycleTime, qty: qtyPerCycle,
-            fillPct: fillPct, usedM3: Math.round(usedM3), totalCap: totalCap,
-            hasStorage: hasStorage, hasContents: hasContents,
-            syncMs: planet.syncMs || 0
-          });
+        planetRows.push({
+          systemName: sysName, ptype: ptype, col: col,
+          product: product, expiry: expiryMs,
+          cycleTime: cycleTime, qty: qtyPerCycle
         });
-      } else if(hasStorage && hasContents && usedM3 > 0){
-        // Factory planet — skip in timers tab
-      }
+      });
     });
 
     if(!planetRows.length) return;
@@ -1666,25 +1653,6 @@ function renderTimers(){
       html += '<div class="timer-countdown '+cls+'" data-expiry="'+row.expiry+'">'+fmtCountdown(ms)+'</div>';
       html += '<div class="timer-expiry">Expires: '+new Date(row.expiry).toLocaleString('en-US',{timeZone:'America/Chicago',month:'numeric',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})+'</div>';
       html += '</div>';
-
-      if(row.hasStorage){
-        var barPct = row.hasContents ? row.fillPct : 0;
-        var fillLabel = row.usedM3.toLocaleString()+' / '+row.totalCap.toLocaleString()+' m³';
-        var syncStr = row.syncMs ? new Date(row.syncMs).toLocaleString('en-US',{timeZone:'America/Chicago',month:'numeric',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}) : null;
-        var ageMs = row.syncMs ? (now - row.syncMs) : null;
-        var ageColor = !ageMs ? 'var(--text3)'
-          : ageMs < 24*3600*1000 ? 'var(--green)'
-          : ageMs < 3*24*3600*1000 ? '#f0a000'
-          : 'var(--red)';
-        var subLabel = row.hasContents ? '~'+row.fillPct+'% · '+fillLabel : 'Open in EVE to sync · Cap: '+row.totalCap.toLocaleString()+' m³';
-        var syncLabel = syncStr ? ' · <span style="color:'+ageColor+'">Synced: '+syncStr+'</span>' : '';
-
-        html += '<div style="height:6px;position:relative;overflow:hidden;border-top:1px solid var(--border)">';
-        html += '<div style="position:absolute;inset:0;background:linear-gradient(to right,#00dd66 0%,#f0a000 55%,#dd2222 100%)"></div>';
-        html += '<div style="position:absolute;top:0;bottom:0;left:'+barPct+'%;right:0;background:var(--bg3);transition:left .4s"></div>';
-        html += '</div>';
-        html += '<div style="padding:4px 14px 6px;font-family:var(--fm);font-size:9px;color:var(--text3)">'+subLabel+syncLabel+'</div>';
-      }
       html += '</div>';
     });
 
