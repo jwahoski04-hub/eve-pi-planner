@@ -470,7 +470,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 <!-- FUEL BLOCK PRODUCTION TAB -->
 <div id="tab-fuel" class="tab">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-    <div class="slabel" style="margin-bottom:0">Nitrogen Fuel Block Production — W-IX39 Sakura</div>
+    <div class="slabel" style="margin-bottom:0" id="fuelTabTitle">Nitrogen Fuel Block Production — W-IX39 Sakura</div>
     <div style="display:flex;align-items:center;gap:8px">
       <span style="font-family:var(--fm);font-size:11px;color:var(--text2)">RUNS (40 blocks ea)</span>
       <input type="number" id="fuelRuns" style="width:56px;padding:5px 6px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:13px;text-align:center" value="1" min="1" max="9999">
@@ -497,6 +497,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
     <!-- Ice / Market Materials -->
     <div>
       <div class="slabel">Ice & Market Materials</div>
+      <div style="margin-bottom:10px">
+        <select id="fuelBlockType" onchange="onFuelTypeChange()"
+          style="width:100%;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fm);font-size:12px;cursor:pointer">
+          <option value="nitrogen">Nitrogen Fuel Block — Caldari (Nitrogen Isotopes)</option>
+          <option value="oxygen">Oxygen Fuel Block — Amarr (Oxygen Isotopes)</option>
+          <option value="hydrogen">Hydrogen Fuel Block — Minmatar (Hydrogen Isotopes)</option>
+          <option value="helium">Helium Fuel Block — Gallente (Helium Isotopes)</option>
+        </select>
+      </div>
       <div class="twrap"><table>
         <thead><tr><th>Material</th><th>Source</th><th class="r">Per Run</th><th class="r">Total</th><th class="r">Jita Sell</th></tr></thead>
         <tbody id="fuelIceBody"></tbody>
@@ -2311,27 +2320,102 @@ document.getElementById('refreshAllBtn').addEventListener('click', async functio
 //  FUEL BLOCK PRODUCTION TAB
 // ════════════════════════════════════════════════════════
 
-// Nitrogen Fuel Block blueprint — 1 run = 40 blocks (Skoli confirmed)
+// Nitrogen Fuel Block blueprint — 1 run = 40 blocks
 var FUEL_RUNS_PER_BATCH = 40;
 var FUEL_OUTPUT_NAME = 'Nitrogen Fuel Block';
 
-// PI materials per run (batch of 40 blocks), base BPO (ME0)
-// At ME10: multiply by 0.90; we show ME0 as base, user can see the chain
-var FUEL_PI = [
-  {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII', piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
-  {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
-  {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',   piChain:'Barren → Reactive Metals + Precious Metals'},
-  {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',    piChain:'Gas → Noble Gas → Oxygen'},
-  {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II',piChain:'Lava → Consumer Electronics + Mech Parts'},
-];
+// All four fuel block types — PI materials are identical, only isotopes differ
+var FUEL_BLOCK_TYPES = {
+  nitrogen: {
+    name: 'Nitrogen Fuel Block',
+    race: 'Caldari',
+    isotope: 'Nitrogen Isotopes',
+    pi: [
+      {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII',  piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
+      {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
+      {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',    piChain:'Barren → Reactive Metals + Precious Metals'},
+      {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',     piChain:'Gas → Noble Gas → Oxygen'},
+      {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II', piChain:'Lava → Consumer Electronics + Mech Parts'},
+    ],
+    ice: [
+      {name:'Nitrogen Isotopes',    source:'Mine / Buy', perRun:450},
+      {name:'Heavy Water',          source:'Mine / Buy', perRun:170},
+      {name:'Liquid Ozone',         source:'Mine / Buy', perRun:350},
+      {name:'Strontium Clathrates', source:'Mine / Buy', perRun:20},
+    ]
+  },
+  oxygen: {
+    name: 'Oxygen Fuel Block',
+    race: 'Amarr',
+    isotope: 'Oxygen Isotopes',
+    pi: [
+      {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII',  piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
+      {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
+      {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',    piChain:'Barren → Reactive Metals + Precious Metals'},
+      {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',     piChain:'Gas → Noble Gas → Oxygen'},
+      {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II', piChain:'Lava → Consumer Electronics + Mech Parts'},
+    ],
+    ice: [
+      {name:'Oxygen Isotopes',      source:'Mine / Buy', perRun:450},
+      {name:'Heavy Water',          source:'Mine / Buy', perRun:170},
+      {name:'Liquid Ozone',         source:'Mine / Buy', perRun:350},
+      {name:'Strontium Clathrates', source:'Mine / Buy', perRun:20},
+    ]
+  },
+  hydrogen: {
+    name: 'Hydrogen Fuel Block',
+    race: 'Minmatar',
+    isotope: 'Hydrogen Isotopes',
+    pi: [
+      {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII',  piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
+      {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
+      {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',    piChain:'Barren → Reactive Metals + Precious Metals'},
+      {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',     piChain:'Gas → Noble Gas → Oxygen'},
+      {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II', piChain:'Lava → Consumer Electronics + Mech Parts'},
+    ],
+    ice: [
+      {name:'Hydrogen Isotopes',    source:'Mine / Buy', perRun:450},
+      {name:'Heavy Water',          source:'Mine / Buy', perRun:170},
+      {name:'Liquid Ozone',         source:'Mine / Buy', perRun:350},
+      {name:'Strontium Clathrates', source:'Mine / Buy', perRun:20},
+    ]
+  },
+  helium: {
+    name: 'Helium Fuel Block',
+    race: 'Gallente',
+    isotope: 'Helium Isotopes',
+    pi: [
+      {name:'Coolant',          tier:2, perRun:9,  system:'W-IX39 V+VII',  piChain:'Storm+Gas → Ionic Solutions+Oxidizing Compound'},
+      {name:'Enriched Uranium', tier:2, perRun:4,  system:'K7D-II III/VI', piChain:'Lava → Precious Metals + Toxic Metals'},
+      {name:'Mechanical Parts', tier:2, perRun:4,  system:'K7D-II VII',    piChain:'Barren → Reactive Metals + Precious Metals'},
+      {name:'Oxygen',           tier:1, perRun:22, system:'W-IX39 VI',     piChain:'Gas → Noble Gas → Oxygen'},
+      {name:'Robotics',         tier:3, perRun:1,  system:'P4-3TJ+K7D-II', piChain:'Lava → Consumer Electronics + Mech Parts'},
+    ],
+    ice: [
+      {name:'Helium Isotopes',      source:'Mine / Buy', perRun:450},
+      {name:'Heavy Water',          source:'Mine / Buy', perRun:170},
+      {name:'Liquid Ozone',         source:'Mine / Buy', perRun:350},
+      {name:'Strontium Clathrates', source:'Mine / Buy', perRun:20},
+    ]
+  }
+};
 
-// Ice / market materials per run
-var FUEL_ICE = [
-  {name:'Nitrogen Isotopes',   source:'Mine / Buy', perRun:450},
-  {name:'Heavy Water',         source:'Mine / Buy', perRun:170},
-  {name:'Liquid Ozone',        source:'Mine / Buy', perRun:350},
-  {name:'Strontium Clathrates',source:'Mine / Buy', perRun:20},
-];
+// Active fuel type — defaults to nitrogen
+var FUEL_PI  = FUEL_BLOCK_TYPES.nitrogen.pi;
+var FUEL_ICE = FUEL_BLOCK_TYPES.nitrogen.ice;
+
+function onFuelTypeChange(){
+  var key = document.getElementById('fuelBlockType').value;
+  var type = FUEL_BLOCK_TYPES[key];
+  FUEL_PI  = type.pi;
+  FUEL_ICE = type.ice;
+  FUEL_OUTPUT_NAME = type.name;
+  // Update title
+  document.getElementById('fuelTabTitle').textContent = type.name+' Production — W-IX39 Sakura';
+  // Clear cached prices so stale isotope prices don't carry over
+  fuelPrices = {};
+  renderFuelTab();
+}
 
 // Prices cache for fuel tab
 var fuelPrices = {};
