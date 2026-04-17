@@ -24,7 +24,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 .app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.header{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.header-row-top{display:flex;align-items:center;position:relative}
+.header-row-bottom{display:flex;align-items:center;justify-content:flex-end}
 .logo{display:flex;align-items:center;gap:14px}
 .logo-diamond{width:38px;height:38px;border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;transform:rotate(45deg);flex-shrink:0}
 .logo-diamond-inner{width:18px;height:18px;background:var(--accent)}
@@ -240,15 +242,19 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 <div class="app">
 
 <header class="header">
-  <div class="logo">
-    <div class="logo-diamond"><div class="logo-diamond-inner"></div></div>
-    <div>
-      <div class="logo-title">PI Planner</div>
-      <div class="logo-sub">Planetary Interaction Suite</div>
+  <div class="header-row-top">
+    <div class="logo">
+      <div class="logo-diamond"><div class="logo-diamond-inner"></div></div>
+      <div>
+        <div class="logo-title">PI Planner</div>
+        <div class="logo-sub">Planetary Interaction Suite</div>
+      </div>
     </div>
+    <a class="back-hub" href="https://jwahoski04-hub.github.io/eve-tools/" title="Return to Tool Suite" style="position:absolute;left:50%;transform:translateX(-50%);"><span class="back-hub-arrow">◀</span><span>BACK TO HUB</span></a>
   </div>
-  <a class="back-hub" href="https://jwahoski04-hub.github.io/eve-tools/" title="Return to Tool Suite"><span class="back-hub-arrow">◀</span><span>BACK TO HUB</span></a>
-  <div class="hdr-status"><div class="dot"></div><span>ESI CONNECTED — TRANQUILITY</span></div>
+  <div class="header-row-bottom">
+    <div class="hdr-status"><div class="dot"></div><span>ESI CONNECTED — TRANQUILITY</span></div>
+  </div>
 </header>
 
 <nav class="nav">
