@@ -31,6 +31,9 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .logo-title{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase}
 .logo-sub{font-family:var(--fm);font-size:11px;color:var(--accent);letter-spacing:1px}
 .hdr-status{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:12px;color:var(--text2)}
+.back-hub{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:3px;background:var(--bg2);color:var(--text2);text-decoration:none;font-family:var(--fm);font-size:12px;letter-spacing:0.5px;transition:all .2s ease;white-space:nowrap}
+.back-hub:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);box-shadow:0 0 12px rgba(0,170,255,0.15)}
+.back-hub-arrow{font-size:14px;line-height:1}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .nav{display:flex;gap:2px;margin-bottom:22px;background:var(--bg1);border:1px solid var(--border);padding:4px}
@@ -244,6 +247,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
       <div class="logo-sub">Planetary Interaction Suite</div>
     </div>
   </div>
+  <a class="back-hub" href="https://jwahoski04-hub.github.io/eve-tools/" title="Return to Tool Suite"><span class="back-hub-arrow">◀</span><span>BACK TO HUB</span></a>
   <div class="hdr-status"><div class="dot"></div><span>ESI CONNECTED — TRANQUILITY</span></div>
 </header>
 
