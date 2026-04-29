@@ -1186,6 +1186,13 @@ function renderMultiDetail(){
 // One planet assumed to have: 2 extractors feeding 1 AIF (P2/P3) or 1 HTPP (P4)
 // Standard factory planet rates per 24h:
 var GAP_RATES = { 1: 960, 2: 120, 3: 72, 4: 24 };
+
+// P0 raw resource → P1 product (derived from SCH tier:1 entries)
+var P0_TO_P1 = {};
+Object.keys(SCH).forEach(function(p1){
+  if(SCH[p1].tier !== 1) return;
+  Object.keys(SCH[p1].inputs).forEach(function(p0){ P0_TO_P1[p0] = p1; });
+});
 // The 6 target characters for gap analysis
 var GAP_CHARS = [
   'Varacruz','Primary Industry','Secondary Industry',
@@ -1639,12 +1646,13 @@ function renderTimers(){
     var gridId = 'tc-'+charIdx;
     var count = planetRows.length;
 
-    // Collect unique P1 products being extracted across all planets
+    // Collect unique P1 products — ECU product is P0 raw, map to P1
     var p1Products = [];
     planetRows.forEach(function(row){
-      if(row.product && row.product !== 'Unknown' && p1Products.indexOf(row.product) === -1){
-        p1Products.push(row.product);
-      }
+      if(!row.product || row.product === 'Unknown') return;
+      var p1 = P0_TO_P1[row.product] || null;
+      var display = p1 || row.product; // fallback to raw name if mapping missing
+      if(p1Products.indexOf(display) === -1) p1Products.push(display);
     });
     p1Products.sort();
 
