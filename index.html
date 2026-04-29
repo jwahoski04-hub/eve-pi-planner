@@ -24,18 +24,13 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 .app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
-.header{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--border)}
-.header-row-top{display:flex;align-items:center;position:relative}
-.header-row-bottom{display:flex;align-items:center;justify-content:flex-end}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--border)}
 .logo{display:flex;align-items:center;gap:14px}
 .logo-diamond{width:38px;height:38px;border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;transform:rotate(45deg);flex-shrink:0}
 .logo-diamond-inner{width:18px;height:18px;background:var(--accent)}
 .logo-title{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase}
 .logo-sub{font-family:var(--fm);font-size:11px;color:var(--accent);letter-spacing:1px}
 .hdr-status{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:12px;color:var(--text2)}
-.back-hub{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:3px;background:var(--bg2);color:var(--text2);text-decoration:none;font-family:var(--fm);font-size:12px;letter-spacing:0.5px;transition:all .2s ease;white-space:nowrap}
-.back-hub:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);box-shadow:0 0 12px rgba(0,170,255,0.15)}
-.back-hub-arrow{font-size:14px;line-height:1}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .nav{display:flex;gap:2px;margin-bottom:22px;background:var(--bg1);border:1px solid var(--border);padding:4px}
@@ -236,134 +231,20 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
 .btn-danger:hover{background:rgba(255,68,102,0.1)}
 .char-loading{font-family:var(--fm);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;padding:12px 0}
 .char-err{font-family:var(--fm);font-size:12px;color:var(--red);padding:8px 0}
-
-/* ── HELP BUTTON + MODAL ─────────────────────────────────────────── */
-/* Amber-accented HELP button in the header row. Matches the pattern
-   used by the Arb Scanner and Market tools so the three sit in the
-   same visual family. Glyph + "HELP" word pair makes it unambiguous. */
-.help-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  height:26px;padding:3px 10px;border-radius:2px;margin-left:14px;
-  background:transparent;border:1px solid var(--amber);
-  color:var(--amber);font-family:var(--mono);font-size:10px;font-weight:600;
-  letter-spacing:0.08em;text-transform:uppercase;
-  cursor:pointer;user-select:none;transition:all 0.15s;
-}
-.help-btn .help-btn-glyph{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:14px;height:14px;border-radius:50%;
-  border:1px solid var(--amber);font-size:11px;line-height:1;
-  font-weight:700;letter-spacing:0;
-}
-.help-btn:hover{
-  background:rgba(255,170,0,0.12);
-  box-shadow:0 0 14px rgba(255,170,0,0.25);
-}
-
-/* Backdrop — dims page, blurs what's behind */
-.help-overlay{
-  display:none;position:fixed;inset:0;z-index:1000;
-  background:rgba(0,0,0,0.82);backdrop-filter:blur(3px);
-  align-items:flex-start;justify-content:center;
-  overflow-y:auto;padding:2rem 1rem;
-}
-.help-overlay.open{display:flex;}
-
-.help-modal{
-  background:var(--bg1);border:1px solid var(--amber);border-radius:4px;
-  max-width:900px;width:100%;
-  padding:1.5rem 1.75rem;
-  box-shadow:0 0 0 3px rgba(255,170,0,0.08), 0 20px 60px rgba(0,0,0,0.6);
-  position:relative;
-}
-.help-modal-close{
-  position:absolute;top:12px;right:12px;width:28px;height:28px;
-  background:transparent;border:1px solid var(--border2);border-radius:50%;
-  color:var(--text2);font-family:var(--mono);font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
-}
-.help-modal-close:hover{color:var(--red);border-color:var(--red);}
-
-.help-title{
-  font-family:var(--fd);font-size:16px;color:var(--amber);
-  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;font-weight:700;
-}
-.help-subtitle{
-  font-family:var(--fm);font-size:12px;color:var(--text2);margin-bottom:1.25rem;
-}
-
-/* Inner tabs */
-.help-tabs{
-  display:flex;gap:2px;border-bottom:1px solid var(--border2);margin-bottom:1rem;
-  flex-wrap:wrap;
-}
-.help-tab{
-  font-family:var(--fm);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
-  padding:7px 14px;cursor:pointer;color:var(--text3);
-  border:none;background:transparent;border-bottom:2px solid transparent;
-  margin-bottom:-1px;transition:color 0.15s, border-color 0.15s;font-weight:600;
-}
-.help-tab:hover{color:var(--text);}
-.help-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
-
-.help-section{display:none;}
-.help-section.active{display:block;}
-
-/* Typography inside sections */
-.help-modal h3{
-  font-family:var(--fd);font-size:12px;color:var(--accent);
-  letter-spacing:0.08em;text-transform:uppercase;margin:1rem 0 0.4rem;font-weight:700;
-}
-.help-modal h3:first-child{margin-top:0;}
-.help-modal p{
-  font-family:var(--fm);font-size:13px;color:var(--text);
-  line-height:1.55;margin-bottom:0.6rem;
-}
-.help-modal ul{
-  font-family:var(--fm);font-size:13px;color:var(--text);
-  line-height:1.55;padding-left:1.25rem;margin-bottom:0.6rem;
-}
-.help-modal li{margin-bottom:0.25rem;}
-.help-modal code,.help-modal .hk{
-  font-family:var(--mono);font-size:11px;color:var(--amber);
-  background:rgba(255,170,0,0.1);padding:1px 5px;border-radius:2px;
-  border:1px solid rgba(255,170,0,0.25);
-}
-.help-modal .hilite{color:var(--accent);font-weight:500;}
-.help-modal .warn{color:var(--red);}
-.help-modal .ok{color:var(--green);}
-.help-modal .amber{color:var(--amber);}
-
-/* Tier pills for tier references in help text */
-.help-tier-pill{
-  display:inline-block;font-family:var(--mono);font-size:10px;padding:1px 6px;
-  border-radius:2px;letter-spacing:0.04em;font-weight:600;
-  border:1px solid;margin:0 2px;
-}
-.help-tier-pill.t1{border-color:var(--t1-c);color:var(--t1-c);background:var(--t1-bg);}
-.help-tier-pill.t2{border-color:var(--t2-c);color:var(--t2-c);background:var(--t2-bg);}
-.help-tier-pill.t3{border-color:var(--t3-c);color:var(--t3-c);background:var(--t3-bg);}
-.help-tier-pill.t4{border-color:var(--t4-c);color:var(--t4-c);background:var(--t4-bg);}
 </style>
 </head>
 <body>
 <div class="app">
 
 <header class="header">
-  <div class="header-row-top">
-    <div class="logo">
-      <div class="logo-diamond"><div class="logo-diamond-inner"></div></div>
-      <div>
-        <div class="logo-title">PI Planner</div>
-        <div class="logo-sub">Planetary Interaction Suite</div>
-      </div>
+  <div class="logo">
+    <div class="logo-diamond"><div class="logo-diamond-inner"></div></div>
+    <div>
+      <div class="logo-title">PI Planner</div>
+      <div class="logo-sub">Planetary Interaction Suite</div>
     </div>
-    <a class="back-hub" href="https://jwahoski04-hub.github.io/eve-tools/" title="Return to Tool Suite" style="position:absolute;left:50%;transform:translateX(-50%);"><span class="back-hub-arrow">◀</span><span>BACK TO HUB</span></a>
   </div>
-  <div class="header-row-bottom">
-    <div class="hdr-status"><div class="dot"></div><span>ESI CONNECTED — TRANQUILITY</span></div>
-    <button class="help-btn" onclick="openHelp()" title="How to use this tool (Esc to close)" aria-label="Open help"><span class="help-btn-glyph">?</span>HELP</button>
-  </div>
+  <div class="hdr-status"><div class="dot"></div><span>ESI CONNECTED — TRANQUILITY</span></div>
 </header>
 
 <nav class="nav">
@@ -640,193 +521,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--acce
   <div style="margin-top:28px">
     <div class="slabel">PI Production Plan</div>
     <div id="fuelPiPlan"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     HELP OVERLAY
-     Hidden by default. Opens via the ? button in the header. Content
-     is organized into 6 tabs so it doesn't overwhelm — Quickstart
-     covers the essentials; deeper tabs explain each workflow.
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()" role="dialog" aria-labelledby="helpTitle" aria-modal="true">
-  <div class="help-modal">
-    <button class="help-modal-close" onclick="closeHelp()" title="Close (Esc)" aria-label="Close help">✕</button>
-    <div class="help-title" id="helpTitle">⬡ How to use the PI Planner</div>
-    <div class="help-subtitle">Plan EVE Online Planetary Interaction chains, track extraction timers, and optimize colony output across your characters.</div>
-
-    <div class="help-tabs" role="tablist">
-      <button class="help-tab active" data-help-tab="quickstart" onclick="selectHelpTab('quickstart')">Quickstart</button>
-      <button class="help-tab" data-help-tab="chain"      onclick="selectHelpTab('chain')">Chain Calculator</button>
-      <button class="help-tab" data-help-tab="multi"      onclick="selectHelpTab('multi')">Multi-Product</button>
-      <button class="help-tab" data-help-tab="timers"     onclick="selectHelpTab('timers')">Extraction Timers</button>
-      <button class="help-tab" data-help-tab="characters" onclick="selectHelpTab('characters')">Characters &amp; ESI</button>
-      <button class="help-tab" data-help-tab="fuel"       onclick="selectHelpTab('fuel')">Fuel Blocks &amp; Tips</button>
-    </div>
-
-    <!-- ─── Quickstart tab ──────────────────────────────────────── -->
-    <div class="help-section active" id="help-section-quickstart">
-      <h3>What this tool does</h3>
-      <p>The PI Planner helps you design and manage Planetary Interaction across EVE Online's four product tiers:
-        <span class="help-tier-pill t1">P1</span> basic materials,
-        <span class="help-tier-pill t2">P2</span> refined commodities,
-        <span class="help-tier-pill t3">P3</span> specialized commodities, and
-        <span class="help-tier-pill t4">P4</span> advanced commodities. It pulls live Jita pricing from Janice and your live colony data from the EVE ESI API.</p>
-
-      <h3>The five tabs</h3>
-      <ul>
-        <li><span class="amber">Chain Calculator</span> — pick one product, see its full schematic tree, inputs needed, and which tier is most profitable to sell at.</li>
-        <li><span class="amber">Multi-Product</span> — select several products at once to see combined material requirements and a gap analysis against what your characters are already producing.</li>
-        <li><span class="amber">Planet Extraction Timers</span> — countdown cards for every extractor across every character. Color-coded by urgency.</li>
-        <li><span class="amber">Characters</span> — connect your EVE characters via ESI to auto-pull live colony data (extractors, factories, storage contents).</li>
-        <li><span class="amber">Fuel Block Production</span> — calculate isotope-blend fuel block runs with PI + ice + market material cost breakdown.</li>
-      </ul>
-
-      <h3>Fastest way to get started</h3>
-      <ul>
-        <li>Go to <span class="hk">Characters</span> and click <span class="hk">+ Add Character</span>. You'll be redirected to EVE SSO to authorize the read-only PI scope.</li>
-        <li>Once connected, your colonies auto-load. Head back to <span class="hk">Chain Calculator</span>.</li>
-        <li>Click <span class="hk">Fetch Prices (Janice)</span> to pull current Jita prices.</li>
-        <li>Click any product card to see its production chain and sell-point analysis.</li>
-        <li>Check the <span class="hk">Planet Extraction Timers</span> tab to see which extractors are about to expire.</li>
-      </ul>
-
-      <h3>No ESI? No problem</h3>
-      <p>Every tab except Characters and Timers works fine without connecting an EVE account. You can plan chains, compare tiers, and calculate fuel runs purely from the schematic data. ESI adds the "what am I currently producing" layer.</p>
-    </div>
-
-    <!-- ─── Chain Calculator tab ────────────────────────────────── -->
-    <div class="help-section" id="help-section-chain">
-      <h3>What Chain Calculator does</h3>
-      <p>Pick a single end product. The tool walks its full schematic tree backwards — every P3 that feeds it, every P2 that feeds those, every P1 that feeds those, down to P0 raw resources. Then it prices everything at Jita and tells you where the money is.</p>
-
-      <h3>Step by step</h3>
-      <ul>
-        <li>Click <span class="hk">Fetch Prices (Janice)</span> once per session to load live Jita prices.</li>
-        <li>Adjust <span class="hk">POCO Tax %</span> if your export taxes aren't the 1% default.</li>
-        <li>Click any product card in the tier grid. P0 resources are hidden by default — filter by name in the search bar.</li>
-        <li>Use <span class="hk">Output Qty</span> to scale the whole chain. Inputs scale proportionally.</li>
-      </ul>
-
-      <h3>Sell Point Analysis</h3>
-      <p>This is the key insight: for any chain, you have multiple places you <i>could</i> stop and sell. A P4 chain could be sold as P1, P2, P3, or finished P4. Each tier has different export tax (higher tier = more tax) and different market demand.</p>
-      <p>The analysis shows net revenue (after export tax) for each sell point. The <span class="ok">BEST</span> tag marks the most profitable option. Sometimes selling P2 intermediates is more profitable than finishing the P4 — the tool makes that math explicit.</p>
-
-      <h3>Production Flow visualization</h3>
-      <p>The horizontal flow diagram shows exactly how raw materials combine through each tier. Hover each node for quantities. Characters already producing an item show their portrait as a pip on that card.</p>
-
-      <h3>Intermediate Schematics table</h3>
-      <p>Lists every schematic run required, grouped by tier. Use this to plan how many factory planets you need and which schematics each should run.</p>
-    </div>
-
-    <!-- ─── Multi-Product tab ───────────────────────────────────── -->
-    <div class="help-section" id="help-section-multi">
-      <h3>What Multi-Product does</h3>
-      <p>Chain Calculator is single-product. Multi-Product is for when you're trying to balance a portfolio — "if I'm producing Robotics AND Consumer Electronics AND Mechanical Parts, how do my colonies stack up?"</p>
-
-      <h3>Selecting products</h3>
-      <p>Click any cards to select them. The grid highlights your picks. The tables below update live as you add/remove products.</p>
-
-      <h3>Gap Analysis panel</h3>
-      <p>Shows per-item supply vs. demand. <span class="ok">Green</span> = you're over-producing this material. <span class="warn">Red</span> = you need more. This is computed from your actual ESI data (what your characters are currently producing) vs. what your selected end products require.</p>
-      <ul>
-        <li>Toggle <span class="hk">Hide sufficient</span> to focus only on bottleneck items.</li>
-        <li>Click the <span class="amber">?</span> next to the panel heading for the assumption details (factory counts, schematic cycles, etc.).</li>
-      </ul>
-
-      <h3>Max Sustainable Output panel</h3>
-      <p>Answers the question: "what's the biggest X/day I can sustain of every selected product <i>simultaneously</i>, given my current raw material output?" Binary-searches for the ceiling and tells you which item is the binding constraint.</p>
-
-      <h3>Combined Intermediates table</h3>
-      <p>Merges all intermediate-tier requirements across your selected products. If two products both need Mechanical Parts, you see the total — useful when splitting production across alt characters.</p>
-    </div>
-
-    <!-- ─── Extraction Timers tab ───────────────────────────────── -->
-    <div class="help-section" id="help-section-timers">
-      <h3>What Extraction Timers shows</h3>
-      <p>Every active extractor across every connected character, color-coded by urgency:</p>
-      <ul>
-        <li><span class="ok">Green</span> — plenty of time remaining.</li>
-        <li><span class="amber">Amber</span> — extraction expiring within the amber threshold (default 72 hours).</li>
-        <li><span class="warn">Red</span> — expiring within the red threshold (default 24 hours).</li>
-        <li><span class="warn">Expired</span> — already ran out; the planet is sitting idle, losing income.</li>
-      </ul>
-
-      <h3>Tune the thresholds</h3>
-      <p>The <span class="hk">Amber under N hrs</span> and <span class="hk">Red under N hrs</span> inputs at the top let you match the alerts to your playstyle. If you log in daily, set amber to 24. If you only check colonies weekly, set amber to 168.</p>
-
-      <h3>Per-character grouping</h3>
-      <p>Each character has its own collapsible section. Click the character name to collapse/expand. Cards show planet type, product being extracted, cycle length, and current countdown.</p>
-
-      <h3>Live countdowns</h3>
-      <p>Counters tick every second. If you leave this tab open in a browser tab, it's basically a live dashboard — no need to refresh.</p>
-
-      <h3>Refresh button</h3>
-      <p>Timer data comes from the cached ESI pull. Click <span class="hk">↻ Refresh</span> to re-fetch PI data from EVE's servers — use this after you've extended extractors in-game.</p>
-    </div>
-
-    <!-- ─── Characters tab ──────────────────────────────────────── -->
-    <div class="help-section" id="help-section-characters">
-      <h3>Connecting a character</h3>
-      <p>Click <span class="hk">+ Add Character</span>. You'll be redirected to EVE Online's official SSO login page. Sign in with the character whose PI you want to track, then approve the <code>esi-planets.manage_planets.v1</code> scope. You'll be redirected back and the character appears in the list.</p>
-
-      <h3>What gets pulled</h3>
-      <ul>
-        <li>Every colony the character owns (planet type, ID, upgrade level).</li>
-        <li>Every pin on each planet (extractors, factories, launchpads, storage).</li>
-        <li>Schematic being run in each factory + extraction heads + expiry times.</li>
-        <li>Current storage contents (with volumes, for fill-percent calculations).</li>
-      </ul>
-      <p>The scope is <b>read-only</b>. The tool cannot modify your PI, trade, or see anything else about your account. Tokens are stored in your browser's localStorage and never sent to any server except EVE's own SSO.</p>
-
-      <h3>Managing characters</h3>
-      <ul>
-        <li>Click any character card to expand it and view their colonies.</li>
-        <li>Factory, extractor, launchpad, and storage counts are shown per planet, with storage fill-% bars.</li>
-        <li>Click the <span class="warn">✕</span> button on a character card to remove them (revokes local token storage — you'll need to re-authorize if you add them back).</li>
-      </ul>
-
-      <h3>Custom ESI app (optional)</h3>
-      <p>The tool ships with a default client ID that works for everyone. If you'd rather use your own EVE Developer application, click <span class="hk">ESI Setup</span> and paste in your Client ID. The setup panel walks through creating an app at developers.eveonline.com with the correct callback URI.</p>
-
-      <h3>Token refresh</h3>
-      <p>Access tokens last 20 minutes; the tool silently refreshes using the stored refresh token. If refresh fails (revoked, expired), you'll need to re-add the character.</p>
-    </div>
-
-    <!-- ─── Fuel Blocks tab ─────────────────────────────────────── -->
-    <div class="help-section" id="help-section-fuel">
-      <h3>What Fuel Block Production does</h3>
-      <p>Fuel blocks combine PI outputs (Coolant, Enriched Uranium, Mechanical Parts, Oxygen, Robotics) with ice products (isotopes, heavy water, liquid ozone) and strontium to produce POS/structure fuel. This tab calculates full cost vs. revenue for any batch size.</p>
-
-      <h3>Step by step</h3>
-      <ul>
-        <li>Pick an isotope variant (Hydrogen, Helium, Nitrogen, Oxygen) — each corresponds to a different racial fuel block.</li>
-        <li>Set <span class="hk">Runs</span> — each run produces 40 blocks.</li>
-        <li>Click <span class="hk">Fetch Prices</span> to pull Jita prices for all materials and the output fuel block.</li>
-      </ul>
-
-      <h3>Reading the metrics</h3>
-      <ul>
-        <li><b>Blocks Produced</b> — total output units (runs × 40).</li>
-        <li><b>Output Value</b> — revenue if you sell the fuel blocks at Jita sell.</li>
-        <li><b>Total Materials</b> — all PI + ice + market material cost combined.</li>
-        <li><b>Profit Margin</b> — output minus materials. Green = profitable, red = loss.</li>
-      </ul>
-
-      <h3>PI vs. Ice/Market cost split</h3>
-      <p>The summary breaks materials into two categories: PI (what you'd produce yourself) and Ice/Market (what you'd buy). If you run your own PI, the "PI Materials Cost" is an opportunity cost — you could sell that PI raw instead. The margin calculation assumes you buy everything at Jita for an apples-to-apples comparison.</p>
-
-      <h3>General tips across the suite</h3>
-      <ul>
-        <li><b>Refresh prices often.</b> Janice prices are cached by session — stale prices lead to bad decisions on thin-margin trades.</li>
-        <li><b>Check your POCO tax.</b> 1% is for high-sec NPC POCOs with Customs Code Expertise V. Player POCOs can be 4-10%.</li>
-        <li><b>Extraction timers are your enemy.</b> An expired extractor = zero income. Check the Timers tab before logging off.</li>
-        <li><b>Multi-Product + Gap Analysis</b> is the most underused feature. If you're running PI on multiple alts, use it to find which raw materials are choking your throughput.</li>
-      </ul>
-
-      <h3>Disclaimer</h3>
-      <p style="color:var(--text2);font-size:11px;">This tool is not affiliated with or endorsed by CCP Games. EVE Online and all related trademarks are the property of CCP hf. Price data from Janice may be delayed. ESI data reflects the last PI action your character took — EVE updates it lazily.</p>
-    </div>
   </div>
 </div>
 
@@ -1945,12 +1639,28 @@ function renderTimers(){
     var gridId = 'tc-'+charIdx;
     var count = planetRows.length;
 
+    // Collect unique P1 products being extracted across all planets
+    var p1Products = [];
+    planetRows.forEach(function(row){
+      if(row.product && row.product !== 'Unknown' && p1Products.indexOf(row.product) === -1){
+        p1Products.push(row.product);
+      }
+    });
+    p1Products.sort();
+
+    var p1Pills = p1Products.map(function(p){
+      return '<span style="display:inline-flex;align-items:center;font-family:var(--fm);font-size:10px;'+
+        'background:rgba(85,170,255,0.1);border:1px solid rgba(85,170,255,0.25);'+
+        'color:var(--t1-c);padding:1px 7px;border-radius:2px;white-space:nowrap">'+p+'</span>';
+    }).join('');
+
     html += '<div class="timer-char">';
     html += '<div class="timer-char-hdr" data-charidx="'+charIdx+'" data-count="'+count+'">';
     html += avatar;
     html += urgencyDot;
     html += '<span class="timer-char-name">'+char.name+'</span>';
-    html += '<span class="timer-char-toggle">&#9660; expand ('+count+' planet'+(count!==1?'s':'')+')</span>';
+    if(p1Pills) html += '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-left:6px;flex:1;min-width:0">'+p1Pills+'</div>';
+    html += '<span class="timer-char-toggle" style="flex-shrink:0;margin-left:6px">&#9660; expand ('+count+' planet'+(count!==1?'s':'')+')</span>';
     html += '</div>';
     html += '<div class="timer-char-grid" id="'+gridId+'" style="display:none">';
 
@@ -2952,45 +2662,6 @@ renderCharList();
 renderTimers();
 renderFuelTab();
 handleOAuthCallback();
-
-// ════════════════════════════════════════════════════════
-//  HELP MODAL — opened via the ? button in the header.
-//  Content is in six tabs (Quickstart, Chain Calculator,
-//  Multi-Product, Extraction Timers, Characters, Fuel).
-//  Tiny API: open, close, select-tab, and an Escape handler.
-// ════════════════════════════════════════════════════════
-function openHelp(){
-  var overlay = document.getElementById('helpOverlay');
-  if(!overlay) return;
-  overlay.classList.add('open');
-  // Prevent the body from scrolling behind the modal
-  document.body.style.overflow = 'hidden';
-  // Always start on Quickstart when opening
-  selectHelpTab('quickstart');
-}
-function closeHelp(){
-  var overlay = document.getElementById('helpOverlay');
-  if(!overlay) return;
-  overlay.classList.remove('open');
-  document.body.style.overflow = '';
-}
-function selectHelpTab(name){
-  document.querySelectorAll('.help-tab').forEach(function(t){
-    t.classList.toggle('active', t.dataset.helpTab === name);
-  });
-  document.querySelectorAll('.help-section').forEach(function(s){
-    s.classList.toggle('active', s.id === 'help-section-' + name);
-  });
-  var overlay = document.getElementById('helpOverlay');
-  if(overlay) overlay.scrollTop = 0;
-}
-// ESC closes the modal
-document.addEventListener('keydown', function(e){
-  if(e.key === 'Escape'){
-    var overlay = document.getElementById('helpOverlay');
-    if(overlay && overlay.classList.contains('open')) closeHelp();
-  }
-});
 </script>
 </body>
 </html>
